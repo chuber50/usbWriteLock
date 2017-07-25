@@ -63,7 +63,7 @@ HRESULT FilterConnection::LoadDriver()
 	return hResult;
 }
 
-std::vector<volume> FilterConnection::PollDevices()
+void FilterConnection::PollDevices()
 {
 	UCHAR buffer[1024];
 	PFILTER_VOLUME_BASIC_INFORMATION volumeBuffer = PFILTER_VOLUME_BASIC_INFORMATION(buffer);
@@ -71,7 +71,7 @@ std::vector<volume> FilterConnection::PollDevices()
 	ULONG volumeBytesReturned;
 	HRESULT hResult = S_OK;
 	WCHAR driveLetter[15] = { 0 };
-	std::vector<volume> volumes;
+	//std::vector<volume> volumes; //TODO!
 
 	try {
 		hResult = FilterVolumeFindFirst(FilterVolumeBasicInformation,
@@ -104,7 +104,17 @@ std::vector<volume> FilterConnection::PollDevices()
 			vol->name = volumeBuffer->FilterVolumeName;
 			vol->instanceCount = instanceCount;
 			vol->isUSB = isUsbDevice(vol->prefixedLetter);
-			volumes.push_back(*vol);
+
+			//TODO: set visited flag, delete nonexistent
+
+			if(std::find(volumes.begin(), volumes.end(), vol) != volumes.end())
+			{
+				delete vol;
+			} else
+			{
+				volumes.push_back(*vol);
+				volumesChanged = true;
+			}
 
 		} while (SUCCEEDED(hResult = FilterVolumeFindNext(volumeIterator,
 			FilterVolumeBasicInformation,
@@ -140,8 +150,6 @@ std::vector<volume> FilterConnection::PollDevices()
 	}
 
 	std::sort(volumes.begin(), volumes.end());
-
-	return volumes;
 }
 
 ULONG FilterConnection::IsAttachedToVolume(_In_ LPCWSTR VolumeName)

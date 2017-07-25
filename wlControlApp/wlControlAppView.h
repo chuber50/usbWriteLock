@@ -70,7 +70,6 @@ public:
 	afx_msg void OnBnClickedBtnapply();
 	void LogMessage(const std::wstring& message);
 	CListCtrl lstLogBox;
-	std::vector<volume> volumes;
 };
 
 #ifndef _DEBUG  // debug version in wlControlAppView.cpp

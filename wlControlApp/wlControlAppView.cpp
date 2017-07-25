@@ -114,51 +114,54 @@ void wlControlAppView::RefreshVolumes()
 	/*std::vector<volume> newVolumes = filter->PollDevices();
 	if (!compareVectors(volumes, newVolumes))
 	{*/
-		volumes = filter->PollDevices();
+		filter->PollDevices();
 
-		LVITEM lvi;
-		CString strItem;
-		int i = 0;
-
-		lstVolumes.SetRedraw(FALSE);
-		lstVolumes.ShowWindow(SW_HIDE);
-		lstVolumes.DeleteAllItems();
-
-		for (auto &volume : volumes)
+		if (filter->volumesChanged)
 		{
-			// column volume
-			lvi.mask = LVIF_TEXT;
-			strItem.Format(volume.name.c_str());
-			lvi.iItem = i;
-			lvi.iSubItem = 0;
-			lvi.pszText = LPTSTR(LPCTSTR(strItem));
-			lstVolumes.InsertItem(&lvi);
+			std::vector<volume> volumes = filter->volumes;
+			LVITEM lvi;
+			CString strItem;
+			int i = 0;
 
-			// column drive letter
-			strItem.Format(volume.driveLetter.c_str());
-			lvi.iSubItem = 1;
-			lvi.pszText = LPTSTR(LPCTSTR(strItem));
-			lstVolumes.SetItem(&lvi);
+			lstVolumes.SetRedraw(FALSE);
+			lstVolumes.ShowWindow(SW_HIDE);
+			lstVolumes.DeleteAllItems();
 
-			// column USB
-			strItem.Format(volume.isUSB ? L"Yes" : L"No");
-			lvi.iSubItem = 2;
-			lvi.pszText = LPTSTR(LPCTSTR(strItem));
-			lstVolumes.SetItem(&lvi);
+			for (auto &volume : volumes)
+			{
+				// column volume
+				lvi.mask = LVIF_TEXT;
+				strItem.Format(volume.name.c_str());
+				lvi.iItem = i;
+				lvi.iSubItem = 0;
+				lvi.pszText = LPTSTR(LPCTSTR(strItem));
+				lstVolumes.InsertItem(&lvi);
 
-			// column status
-			strItem.Format(volume.instanceCount > 0 ? L"Write lock enabled" : L"Write lock disabled");
-			lvi.iSubItem = 3;
-			lvi.pszText = LPTSTR(LPCTSTR(strItem));
-			lstVolumes.SetItem(&lvi);
+				// column drive letter
+				strItem.Format(volume.driveLetter.c_str());
+				lvi.iSubItem = 1;
+				lvi.pszText = LPTSTR(LPCTSTR(strItem));
+				lstVolumes.SetItem(&lvi);
 
-			i++;
+				// column USB
+				strItem.Format(volume.isUSB ? L"Yes" : L"No");
+				lvi.iSubItem = 2;
+				lvi.pszText = LPTSTR(LPCTSTR(strItem));
+				lstVolumes.SetItem(&lvi);
+
+				// column status
+				strItem.Format(volume.instanceCount > 0 ? L"Write lock enabled" : L"Write lock disabled");
+				lvi.iSubItem = 3;
+				lvi.pszText = LPTSTR(LPCTSTR(strItem));
+				lstVolumes.SetItem(&lvi);
+
+				i++;
+			}
+
+			lstVolumes.ShowWindow(SW_SHOW);
+			lstVolumes.SetRedraw(TRUE);
 		}
-
-		lstVolumes.ShowWindow(SW_SHOW);
-		lstVolumes.SetRedraw(TRUE);
-	//}
-
+		filter->volumesChanged = false;
 }
 
 void wlControlAppView::OnStopTimer()
