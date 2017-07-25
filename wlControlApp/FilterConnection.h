@@ -28,6 +28,7 @@ public:
 	~FilterConnection();
 
 	HRESULT ConnectFilter();
+	HRESULT LoadDriver();
 	static std::vector<volume> PollDevices();
 	static ULONG IsAttachedToVolume(LPCWSTR VolumeName);
 	static BOOL isUsbDevice(std::wstring volumeAccessPath);

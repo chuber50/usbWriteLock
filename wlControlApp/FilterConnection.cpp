@@ -36,6 +36,33 @@ HRESULT FilterConnection::ConnectFilter()
 	return hResult;
 }
 
+// loads the driver service
+HRESULT FilterConnection::LoadDriver()
+{
+	HRESULT hResult = S_FALSE;
+	HANDLE hToken;
+	TOKEN_PRIVILEGES tkp;
+   
+	// need to set privilege to load driver by name
+	// https://msdn.microsoft.com/en-us/library/windows/desktop/aa375202(v=vs.85).aspx
+	if (OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken))
+	{  
+		LookupPrivilegeValue(NULL, SE_LOAD_DRIVER_NAME, &tkp.Privileges[0].Luid);
+
+		tkp.PrivilegeCount = 1;  // one privilege to set   
+		tkp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+
+		AdjustTokenPrivileges(hToken, FALSE, &tkp, 0, PTOKEN_PRIVILEGES(nullptr), 0);
+
+		if (GetLastError() == ERROR_SUCCESS)
+		{
+			hResult = FilterLoad(MINISPY_NAME);
+		}
+	}
+
+	return hResult;
+}
+
 std::vector<volume> FilterConnection::PollDevices()
 {
 	UCHAR buffer[1024];

@@ -54,9 +54,23 @@ public:
 	CEdit txtPollInterval;
 	CButton chkAutoAttach;
 	UINT_PTR m_nCallbackTimer;
+	int pollInterval = 1000;
+	bool attachDriver = false;
 	FilterConnection* filter = new FilterConnection();
 //	afx_msg void OnEnChangeTxtPollinterval();
 	afx_msg void OnEnKillfocusTxtPollinterval();
+	afx_msg void OnBnClickedButton1();
+	afx_msg void OnBnClickedButton3();
+	CButton btnConnectDriver;
+	afx_msg void OnBnClickedBtnconnectdriver();
+	CButton btnConnectFilter;
+	CButton btnExitApplication;
+	afx_msg void OnBnClickedBtnexit();
+	CButton btnApplySettings;
+	afx_msg void OnBnClickedBtnapply();
+	void LogMessage(const std::wstring& message);
+	CListCtrl lstLogBox;
+	std::vector<volume> volumes;
 };
 
 #ifndef _DEBUG  // debug version in wlControlAppView.cpp
