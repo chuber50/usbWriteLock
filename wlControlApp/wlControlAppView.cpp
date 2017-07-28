@@ -155,6 +155,11 @@ void wlControlAppView::RefreshVolumes()
 				lvi.pszText = LPTSTR(LPCTSTR(strItem));
 				lstVolumes.SetItem(&lvi);
 
+				if (volume.isUSB)
+				{
+					this->LogMessage(L"Detected USB device: " + volume.name + L" " + volume.driveLetter);
+				}
+
 				i++;
 			}
 

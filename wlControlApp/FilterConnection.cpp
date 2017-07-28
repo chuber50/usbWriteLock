@@ -71,7 +71,7 @@ void FilterConnection::PollDevices()
 	ULONG volumeBytesReturned;
 	HRESULT hResult = S_OK;
 	WCHAR driveLetter[15] = { 0 };
-	//std::vector<volume> volumes; //TODO!
+	std::vector<volume> volumesActual; 
 
 	try {
 		hResult = FilterVolumeFindFirst(FilterVolumeBasicInformation,
@@ -105,22 +105,21 @@ void FilterConnection::PollDevices()
 			vol->instanceCount = instanceCount;
 			vol->isUSB = isUsbDevice(vol->prefixedLetter);
 
-			//TODO: set visited flag, delete nonexistent
-
-			if(std::find(volumes.begin(), volumes.end(), vol) != volumes.end())
-			{
-				delete vol;
-			} else
-			{
-				volumes.push_back(*vol);
-				volumesChanged = true;
-			}
+			volumesActual.push_back(*vol);
 
 		} while (SUCCEEDED(hResult = FilterVolumeFindNext(volumeIterator,
 			FilterVolumeBasicInformation,
 			volumeBuffer,
 			sizeof(buffer) - sizeof(WCHAR),    //save space to null terminate name
 			&volumeBytesReturned)));
+
+		std::sort(volumesActual.begin(), volumesActual.end());
+
+		if (!(volumes == volumesActual))
+		{
+			volumes = volumesActual;
+			volumesChanged = true;
+		}
 
 		if (HRESULT_FROM_WIN32(ERROR_NO_MORE_ITEMS) == hResult) {
 

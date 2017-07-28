@@ -18,12 +18,12 @@ struct volume {
 		return isUSB > a.isUSB;
 	}
 	
-	friend bool operator==(const volume& a, const volume* b)
+	friend bool operator==(const volume& a, const volume& b)
 	{
-		return b->driveLetter.compare(a.driveLetter) == 0 &&
-			b->name.compare(a.name) == 0 &&
-			b->instanceCount == a.instanceCount &&
-			b->isUSB == a.isUSB;
+		return b.driveLetter.compare(a.driveLetter) == 0 &&
+			b.name.compare(a.name) == 0 &&
+			b.instanceCount == a.instanceCount &&
+			b.isUSB == a.isUSB;
 	}
 };
 
@@ -36,6 +36,12 @@ public:
 	~FilterConnection();
 
 	std::vector<volume> volumes;
+
+	friend bool operator == (const std::vector <volume> & a, const std::vector <volume> & b)
+	{
+		return (a.size() == b.size())
+			&& std::equal(a.begin(), a.end(), b.begin());
+	}
 
 	HRESULT ConnectFilter();
 	HRESULT LoadDriver();
