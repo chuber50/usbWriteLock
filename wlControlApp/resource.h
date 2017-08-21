@@ -19,7 +19,6 @@
 #define IDC_BTNApply                    1010
 #define IDC_BTNConnectDriver            1011
 #define IDC_BTNExit                     1012
-#define IDC_btnConnectFilter            1013
 #define IDC_lstLogBox                   1015
 #define IDC_LIST3                       1016
 

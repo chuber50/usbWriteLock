@@ -48,7 +48,6 @@ void wlControlAppView::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_TXT_POLLINTERVAL, txtPollInterval);
 	DDX_Control(pDX, IDC_CHECK_AUTOATTACH, chkAutoAttach);
 	DDX_Control(pDX, IDC_BTNConnectDriver, btnConnectDriver);
-	DDX_Control(pDX, IDC_btnConnectFilter, btnConnectFilter);
 	DDX_Control(pDX, IDC_BTNExit, btnExitApplication);
 	DDX_Control(pDX, IDC_BTNApply, btnApplySettings);
 	DDX_Control(pDX, IDC_lstLogBox, lstLogBox);
@@ -218,6 +217,11 @@ void wlControlAppView::OnBnClickedBtnconnectdriver()
 	HRESULT hResult = filter->LoadDriver();
 	_com_error err(hResult);
 	this->LogMessage(L"Loading filter driver: " + std::wstring(err.ErrorMessage()));
+
+	if (hResult == S_OK)
+	{
+		btnConnectDriver.EnableWindow(FALSE);
+	}
 
 	m_nCallbackTimer = SetTimer(2, 1000, nullptr);
 }
