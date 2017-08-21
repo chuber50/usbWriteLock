@@ -49,4 +49,6 @@ public:
 	bool volumesChanged = true;
 	static ULONG IsAttachedToVolume(LPCWSTR VolumeName);
 	static BOOL isUsbDevice(std::wstring volumeAccessPath);
+	HRESULT attachFilterToDevice(std::wstring volumeName);
+	HRESULT detachFilterFromDevice(std::wstring volumeName);
 };

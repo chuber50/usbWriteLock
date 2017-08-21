@@ -55,7 +55,7 @@ public:
 	CButton chkAutoAttach;
 	UINT_PTR m_nCallbackTimer;
 	int pollInterval = 1000;
-	bool attachDriver = false;
+	bool attachFilter = true;
 	FilterConnection* filter = new FilterConnection();
 //	afx_msg void OnEnChangeTxtPollinterval();
 	afx_msg void OnEnKillfocusTxtPollinterval();

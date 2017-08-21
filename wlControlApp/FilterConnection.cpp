@@ -242,3 +242,32 @@ BOOL FilterConnection::isUsbDevice(std::wstring volumeAccessPath)
 
 	return BusTypeUsb == busType;
 }
+
+
+//attaches filter to actual drive
+HRESULT FilterConnection::attachFilterToDevice(std::wstring volumeName)
+{
+	HRESULT hResult;
+	WCHAR instanceName[INSTANCE_NAME_MAX_CHARS + 1];
+
+	//https://fsfilters.blogspot.de/2011/07/more-on-instances-and-volumes.html
+	hResult = FilterAttach(MINISPY_NAME,
+		PWSTR(&volumeName[0]),
+		NULL, // instance name
+		sizeof(instanceName),
+		instanceName);
+
+	return hResult;
+}
+
+HRESULT FilterConnection::detachFilterFromDevice(std::wstring volumeName)
+{
+	HRESULT hResult;
+
+	// instance does not matter - we only hook at one altitude
+	hResult = FilterDetach(MINISPY_NAME,
+		PWSTR(&volumeName[0]),
+		NULL); 
+
+	return hResult;
+}

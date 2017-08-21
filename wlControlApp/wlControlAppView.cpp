@@ -68,6 +68,7 @@ void wlControlAppView::OnInitialUpdate()
 	GetParentFrame()->RecalcLayout();
 	ResizeParentToFit();
 
+	btnConnectDriver.SetShield(TRUE);
 
 	// init list view
 	CRect rect;
@@ -83,12 +84,15 @@ void wlControlAppView::OnInitialUpdate()
 	txtPollInterval.SetWindowText(_T("1000"));
 	chkAutoAttach.SetCheck(true);
 
+	// init log view
+	lstLogBox.InsertColumn(0, L"Log Message");
+	lstLogBox.SetColumnWidth(0, LVSCW_AUTOSIZE_USEHEADER);
+
 
 	//wlMainFrame *pFrame = (wlMainFrame *)AfxGetMainWnd();
 	HRESULT filterStatus = filter->ConnectFilter();
 	 
 	if (filterStatus == S_OK) {
-		//pFrame->get_StatusBar()->SetPaneText(1, L"Driver connected", TRUE);
 		this->LogMessage(L"Driver connected");
 		btnConnectDriver.EnableWindow(FALSE);
 
@@ -98,7 +102,7 @@ void wlControlAppView::OnInitialUpdate()
 	{
 		_com_error err(filterStatus);
 		std::wstring errMsg =  err.ErrorMessage();
-		//pFrame->get_StatusBar()->SetPaneText(1, (L"Driver not connected: " + errMsg).c_str(), TRUE);
+		this->LogMessage(L"Locking driver not loaded");
 		btnConnectDriver.EnableWindow(TRUE);
 	}
 }
@@ -158,6 +162,17 @@ void wlControlAppView::RefreshVolumes()
 				if (volume.isUSB)
 				{
 					this->LogMessage(L"Detected USB device: " + volume.name + L" " + volume.driveLetter);
+					if (attachFilter)
+					{
+						HRESULT hResult = filter->attachFilterToDevice(volume.name);
+						_com_error err(hResult);
+						this->LogMessage(L"Attaching lock to device " + volume.driveLetter + L" " + err.ErrorMessage());
+					} else
+					{
+						HRESULT hResult = filter->detachFilterFromDevice(volume.name);
+						_com_error err(hResult);
+						this->LogMessage(L"Detaching lock from device " + volume.driveLetter + L" " + err.ErrorMessage());
+					}
 				}
 
 				i++;
@@ -200,7 +215,11 @@ wlControlAppDoc* wlControlAppView::GetDocument() const // non-debug version is i
 
 void wlControlAppView::OnBnClickedBtnconnectdriver()
 {
-	filter->LoadDriver();
+	HRESULT hResult = filter->LoadDriver();
+	_com_error err(hResult);
+	this->LogMessage(L"Loading filter driver: " + std::wstring(err.ErrorMessage()));
+
+	m_nCallbackTimer = SetTimer(2, 1000, nullptr);
 }
 
 
@@ -227,7 +246,8 @@ void wlControlAppView::OnBnClickedBtnapply()
 		MessageBox(_T("Settings applied."), _T("Settings"), MB_ICONASTERISK | MB_OK);
 	}
 
-	attachDriver = !!chkAutoAttach.GetCheck();
+	attachFilter = !!chkAutoAttach.GetCheck();
+	filter->volumesChanged = true; // trigger update
 }
 
 void wlControlAppView::LogMessage(const std::wstring& message)
@@ -244,6 +264,3 @@ void wlControlAppView::LogMessage(const std::wstring& message)
 	lvi.pszText = LPWSTR(&vecMsg[0]);
 	lstLogBox.InsertItem(&lvi);
 }
-
-
-
