@@ -221,9 +221,8 @@ void wlControlAppView::OnBnClickedBtnconnectdriver()
 	if (hResult == S_OK)
 	{
 		btnConnectDriver.EnableWindow(FALSE);
+		m_nCallbackTimer = SetTimer(2, 1000, nullptr);
 	}
-
-	m_nCallbackTimer = SetTimer(2, 1000, nullptr);
 }
 
 
