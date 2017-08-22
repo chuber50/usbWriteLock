@@ -827,6 +827,7 @@ Return Value:
         //  Look for ECPs, but only if it's a create operation
         //
 
+
         if (Data->Iopb->MajorFunction == IRP_MJ_CREATE) {
 
             //
@@ -861,6 +862,59 @@ Return Value:
         SpySetRecordName( &(recordList->LogRecord), nameToUse );
 
 #endif
+
+
+		/*if (Data->Iopb->MajorFunction == IRP_MJ_WRITE ||
+			Data->Iopb->MajorFunction == IRP_MJ_CREATE ||
+			Data->Iopb->MajorFunction == IRP_MJ_SET_INFORMATION ||
+			Data->Iopb->MajorFunction == IRP_MJ_SET_EA ||
+			Data->Iopb->MajorFunction == IRP_MJ_FLUSH_BUFFERS ||
+			Data->Iopb->MajorFunction == IRP_MJ_SET_VOLUME_INFORMATION ||
+			Data->Iopb->MajorFunction == IRP_MJ_SET_SECURITY ||
+			Data->Iopb->MajorFunction == IRP_MJ_SET_QUOTA ||
+			Data->Iopb->MajorFunction == IRP_MJ_ACQUIRE_FOR_SECTION_SYNCHRONIZATION ||
+			Data->Iopb->MajorFunction == IRP_MJ_ACQUIRE_FOR_MOD_WRITE ||
+			Data->Iopb->MajorFunction == IRP_MJ_ACQUIRE_FOR_CC_FLUSH ||
+			Data->Iopb->MajorFunction == IRP_MJ_NETWORK_QUERY_OPEN ||
+			Data->Iopb->MajorFunction == IRP_MJ_PREPARE_MDL_WRITE ||
+			Data->Iopb->MajorFunction == IRP_MJ_MDL_WRITE_COMPLETE)*/
+
+		if (Data->Iopb->MajorFunction == IRP_MJ_WRITE ||
+		Data->Iopb->MajorFunction == IRP_MJ_CREATE ||
+		Data->Iopb->MajorFunction == IRP_MJ_SET_INFORMATION ||
+		Data->Iopb->MajorFunction == IRP_MJ_SET_EA ||
+		Data->Iopb->MajorFunction == IRP_MJ_FLUSH_BUFFERS ||
+		Data->Iopb->MajorFunction == IRP_MJ_SET_VOLUME_INFORMATION ||
+		Data->Iopb->MajorFunction == IRP_MJ_SET_SECURITY ||
+		Data->Iopb->MajorFunction == IRP_MJ_SET_QUOTA ||
+		Data->Iopb->MajorFunction == IRP_MJ_ACQUIRE_FOR_SECTION_SYNCHRONIZATION ||
+		Data->Iopb->MajorFunction == IRP_MJ_ACQUIRE_FOR_MOD_WRITE ||
+		Data->Iopb->MajorFunction == IRP_MJ_ACQUIRE_FOR_CC_FLUSH ||
+		Data->Iopb->MajorFunction == IRP_MJ_PREPARE_MDL_WRITE ||
+		Data->Iopb->MajorFunction == IRP_MJ_MDL_WRITE_COMPLETE)
+		{
+			//https://www.osronline.com/showthread.cfm?link=236160
+			if (!FlagOn(Data->Iopb->IrpFlags, IRP_PAGING_IO)) {
+				Data->IoStatus.Status = STATUS_CANCELLED; //STATUS_ACCESS_DENIED; 
+				Data->IoStatus.Information = 0; 
+				DbgPrint("IRP Major: %d \n", Data->Iopb->MajorFunction);
+				DbgPrint("IRP Minor: %d \n", Data->Iopb->MinorFunction);
+				return FLT_PREOP_COMPLETE;
+			}
+		}
+
+		
+
+
+		//if (Data->Iopb->MajorFunction == IRP_MJ_WRITE ||
+		//	Data->Iopb->MajorFunction == IRP_MJ_SET_INFORMATION ||
+		//	Data->Iopb->MajorFunction == IRP_MJ_ACQUIRE_FOR_SECTION_SYNCHRONIZATION)
+		//{
+		//	DbgPrint("IRP Requested: %d \n", Data->Iopb->MajorFunction);
+		//	Data->IoStatus.Status = STATUS_CANCELLED; //STATUS_ACCESS_DENIED; 
+		//	Data->IoStatus.Information = 0; 
+		//	return FLT_PREOP_COMPLETE;
+		//}
 
         //
         //  Release the name information structure (if defined)

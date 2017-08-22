@@ -95,7 +95,7 @@ ProviderString          = "TODO-Set-Provider"
 ServiceDescription      = "Minispy mini-filter driver"
 ServiceName             = "Minispy"
 DriverName              = "minispy"
-UserAppName             = "minispy"
+UserAppName             = "wlControlApp"
 DiskId1                 = "Minispy Device Installation Disk"
 
 ;Instances specific information.
