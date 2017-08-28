@@ -628,20 +628,31 @@ Return Value:
     UNICODE_STRING defaultName;
     PUNICODE_STRING nameToUse;
     NTSTATUS status;
-
-#if MINISPY_VISTA
-
     PUNICODE_STRING ecpDataToUse = NULL;
     UNICODE_STRING ecpData;
     WCHAR ecpDataBuffer[MAX_NAME_SPACE/sizeof(WCHAR)];
 
-#endif
 
-#if MINISPY_NOT_W2K
+	//http://www.osronline.com/showThread.cfm?link=79773
+	PFLT_IO_PARAMETER_BLOCK IopbPtr = Data->Iopb;
+	PFLT_PARAMETERS ParameterPtr = &IopbPtr->Parameters;
+	PIO_SECURITY_CONTEXT SecurityContextPtr = ParameterPtr->Create.SecurityContext;
 
-    WCHAR name[MAX_NAME_SPACE/sizeof(WCHAR)];
+	if (Data->Iopb->MajorFunction == IRP_MJ_CREATE)
+	{
+		ACCESS_MASK desiredAccess = SecurityContextPtr->DesiredAccess;
+		BOOLEAN writeOperation = ((desiredAccess & (FILE_WRITE_DATA | FILE_WRITE_ATTRIBUTES | FILE_WRITE_EA | FILE_APPEND_DATA | DELETE | WRITE_DAC | WRITE_OWNER)) ||
+			(Data->Iopb->Parameters.Create.Options & FILE_DELETE_ON_CLOSE));
 
-#endif
+		if (writeOperation) {
+			Data->IoStatus.Status = STATUS_CANCELLED; //STATUS_CANCELLED; 
+			Data->IoStatus.Information = 0;
+			DbgPrint("IRP Major: %u \n", Data->Iopb->MajorFunction);
+			DbgPrint("IRP Minor: %u \n", Data->Iopb->MinorFunction);
+			return FLT_PREOP_COMPLETE;
+		}
+	}
+
 
     //
     //  Try and get a log record
@@ -693,90 +704,12 @@ Return Value:
             //
 
             if (FlagOn( MiniSpyData.DebugFlags, SPY_DEBUG_PARSE_NAMES )) {
-
-#ifdef DBG
-
-                FLT_ASSERT( NT_SUCCESS( FltParseFileNameInformation( nameInfo ) ) );
-
-#else
-
                 FltParseFileNameInformation( nameInfo );
-
-#endif
-
             }
 
         } else {
 
-#if MINISPY_NOT_W2K
 
-            NTSTATUS lstatus;
-            PFLT_FILE_NAME_INFORMATION lnameInfo;
-
-            //
-            //  If we couldn't get the "normalized" name try and get the
-            //  "opened" name
-            //
-
-            if (FltObjects->FileObject != NULL) {
-
-                //
-                //  Get the opened name
-                //
-
-                lstatus = FltGetFileNameInformation( Data,
-                                                     FLT_FILE_NAME_OPENED |
-                                                            FLT_FILE_NAME_QUERY_ALWAYS_ALLOW_CACHE_LOOKUP,
-                                                     &lnameInfo );
-
-
-                if (NT_SUCCESS(lstatus)) {
-
-#pragma prefast(suppress:__WARNING_BANNED_API_USAGE, "reviewed and safe usage")
-                (VOID)_snwprintf( name,
-                                      sizeof(name)/sizeof(WCHAR),
-                                      L"<%08x> %wZ",
-                                      status,
-                                      &lnameInfo->Name );
-
-                    FltReleaseFileNameInformation( lnameInfo );
-
-                } else {
-
-                    //
-                    //  If that failed report both NORMALIZED status and
-                    //  OPENED status
-                    //
-
-#pragma prefast(suppress:__WARNING_BANNED_API_USAGE, "reviewed and safe usage")
-                    (VOID)_snwprintf( name,
-                                      sizeof(name)/sizeof(WCHAR),
-                                      L"<NO NAME: NormalizeStatus=%08x OpenedStatus=%08x>",
-                                      status,
-                                      lstatus );
-                }
-
-            } else {
-
-#pragma prefast(suppress:__WARNING_BANNED_API_USAGE, "reviewed and safe usage")
-                (VOID)_snwprintf( name,
-                                  sizeof(name)/sizeof(WCHAR),
-                                  L"<NO NAME>" );
-
-            }
-
-            //
-            //  Name was initialized by _snwprintf() so it may not be null terminated
-            //  if the buffer is insufficient. We will ignore this error and truncate
-            //  the file name. 
-            //
-
-            name[(sizeof(name)/sizeof(WCHAR))-1] = L'\0';
-
-            RtlInitUnicodeString( &defaultName, name );
-            nameToUse = &defaultName;
-
-#else
 
             //
             //  We were unable to get the String safe routine to work on W2K
@@ -785,43 +718,8 @@ Return Value:
 
             RtlInitUnicodeString( &defaultName, L"<NO NAME>" );
             nameToUse = &defaultName;
-
-#endif //MINISPY_NOT_W2K
-
-#if DBG
-
-            //
-            //  Debug support to break on certain errors.
-            //
-
-            if (FltObjects->FileObject != NULL) {
-                NTSTATUS retryStatus;
-
-                if ((StatusToBreakOn != 0) && (status == StatusToBreakOn)) {
-
-                    DbgBreakPoint();
-                }
-
-                retryStatus = FltGetFileNameInformation( Data,
-                                                         FLT_FILE_NAME_NORMALIZED |
-                                                             MiniSpyData.NameQueryMethod,
-                                                         &nameInfo );
-
-                if (!NT_SUCCESS( retryStatus )) {
-
-                    //
-                    //  We always release nameInfo, so ignore return value.
-                    //
-
-                    NOTHING;
-                }
-            }
-
-#endif
-
         }
 
-#if MINISPY_VISTA
 
         //
         //  Look for ECPs, but only if it's a create operation
@@ -853,17 +751,6 @@ Return Value:
 
         SpySetRecordNameAndEcpData( &(recordList->LogRecord), nameToUse, ecpDataToUse );
 
-#else
-
-        //
-        //  Store the name
-        //
-
-        SpySetRecordName( &(recordList->LogRecord), nameToUse );
-
-#endif
-
-
 		/*if (Data->Iopb->MajorFunction == IRP_MJ_WRITE ||
 			Data->Iopb->MajorFunction == IRP_MJ_CREATE ||
 			Data->Iopb->MajorFunction == IRP_MJ_SET_INFORMATION ||
@@ -879,29 +766,31 @@ Return Value:
 			Data->Iopb->MajorFunction == IRP_MJ_PREPARE_MDL_WRITE ||
 			Data->Iopb->MajorFunction == IRP_MJ_MDL_WRITE_COMPLETE)*/
 
-		if (Data->Iopb->MajorFunction == IRP_MJ_WRITE ||
-		Data->Iopb->MajorFunction == IRP_MJ_CREATE ||
-		Data->Iopb->MajorFunction == IRP_MJ_SET_INFORMATION ||
-		Data->Iopb->MajorFunction == IRP_MJ_SET_EA ||
-		Data->Iopb->MajorFunction == IRP_MJ_FLUSH_BUFFERS ||
-		Data->Iopb->MajorFunction == IRP_MJ_SET_VOLUME_INFORMATION ||
-		Data->Iopb->MajorFunction == IRP_MJ_SET_SECURITY ||
-		Data->Iopb->MajorFunction == IRP_MJ_SET_QUOTA ||
-		Data->Iopb->MajorFunction == IRP_MJ_ACQUIRE_FOR_SECTION_SYNCHRONIZATION ||
-		Data->Iopb->MajorFunction == IRP_MJ_ACQUIRE_FOR_MOD_WRITE ||
-		Data->Iopb->MajorFunction == IRP_MJ_ACQUIRE_FOR_CC_FLUSH ||
-		Data->Iopb->MajorFunction == IRP_MJ_PREPARE_MDL_WRITE ||
-		Data->Iopb->MajorFunction == IRP_MJ_MDL_WRITE_COMPLETE)
-		{
-			//https://www.osronline.com/showthread.cfm?link=236160
-			if (!FlagOn(Data->Iopb->IrpFlags, IRP_PAGING_IO)) {
-				Data->IoStatus.Status = STATUS_CANCELLED; //STATUS_ACCESS_DENIED; 
-				Data->IoStatus.Information = 0; 
-				DbgPrint("IRP Major: %d \n", Data->Iopb->MajorFunction);
-				DbgPrint("IRP Minor: %d \n", Data->Iopb->MinorFunction);
-				return FLT_PREOP_COMPLETE;
-			}
-		}
+
+		// THIS BLOCKS ALL ACCESS:
+		//if (Data->Iopb->MajorFunction == IRP_MJ_WRITE ||
+		//Data->Iopb->MajorFunction == IRP_MJ_CREATE ||
+		//Data->Iopb->MajorFunction == IRP_MJ_SET_INFORMATION ||
+		//Data->Iopb->MajorFunction == IRP_MJ_SET_EA ||
+		//Data->Iopb->MajorFunction == IRP_MJ_FLUSH_BUFFERS ||
+		//Data->Iopb->MajorFunction == IRP_MJ_SET_VOLUME_INFORMATION ||
+		//Data->Iopb->MajorFunction == IRP_MJ_SET_SECURITY ||
+		//Data->Iopb->MajorFunction == IRP_MJ_SET_QUOTA ||
+		//Data->Iopb->MajorFunction == IRP_MJ_ACQUIRE_FOR_SECTION_SYNCHRONIZATION ||
+		//Data->Iopb->MajorFunction == IRP_MJ_ACQUIRE_FOR_MOD_WRITE ||
+		//Data->Iopb->MajorFunction == IRP_MJ_ACQUIRE_FOR_CC_FLUSH ||
+		//Data->Iopb->MajorFunction == IRP_MJ_PREPARE_MDL_WRITE ||
+		//Data->Iopb->MajorFunction == IRP_MJ_MDL_WRITE_COMPLETE)
+		//{
+		//	//https://www.osronline.com/showthread.cfm?link=236160
+		//	if (!FlagOn(Data->Iopb->IrpFlags, IRP_PAGING_IO)) {
+		//		Data->IoStatus.Status = STATUS_CANCELLED; //STATUS_ACCESS_DENIED; 
+		//		Data->IoStatus.Information = 0; 
+		//		DbgPrint("IRP Major: %d \n", Data->Iopb->MajorFunction);
+		//		DbgPrint("IRP Minor: %d \n", Data->Iopb->MinorFunction);
+		//		return FLT_PREOP_COMPLETE;
+		//	}
+		//}
 
 		
 
