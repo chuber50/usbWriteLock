@@ -19,13 +19,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="minispy.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="mspyLib.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RegistrationData.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="usbwl.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

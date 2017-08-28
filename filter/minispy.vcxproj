@@ -180,7 +180,7 @@
     </Midl>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="minispy.c" />
+    <ClCompile Include="usbwl.c" />
     <ClCompile Include="mspyLib.c" />
     <ClCompile Include="RegistrationData.c" />
     <ResourceCompile Include="minispy.rc" />

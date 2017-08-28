@@ -55,7 +55,6 @@ void wlControlAppView::DoDataExchange(CDataExchange* pDX)
 
 BOOL wlControlAppView::PreCreateWindow(CREATESTRUCT& cs)
 {
-	cs.style &= ~FWS_ADDTOTITLE; //TODO: no effect?
 	return CFormView::PreCreateWindow(cs);
 }
 

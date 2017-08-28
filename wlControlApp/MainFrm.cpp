@@ -42,14 +42,6 @@ int wlMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CFrameWnd::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
-	//if (!m_wndStatusBar.Create(this))
-	//{
-	//	TRACE0("Failed to create status bar\n");
-	//	return -1;      // fail to create
-	//}
-	//m_wndStatusBar.SetIndicators(indicators, sizeof(indicators)/sizeof(UINT));
-	//m_wndStatusBar.SetPaneInfo(1, ID_INDICATOR_STATUS, SBPS_NOBORDERS, 400);
-
 	return 0;
 }
 
@@ -58,8 +50,6 @@ BOOL wlMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 {
 	if( !CFrameWnd::PreCreateWindow(cs) )
 		return FALSE;
-	// TODO: Modify the Window class or styles here by modifying
-	//  the CREATESTRUCT cs
 
 	if (cs.hMenu != NULL)
 	{
@@ -67,18 +57,12 @@ BOOL wlMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 		cs.hMenu = NULL;              // no menu for this window
 	}
 
-	cs.style = WS_OVERLAPPED | WS_CAPTION | FWS_ADDTOTITLE
+	cs.style = WS_OVERLAPPED | WS_CAPTION
 		  | WS_MINIMIZEBOX | WS_SYSMENU;
 
 	return TRUE;
 }
 
-//CStatusBar* wlMainFrame::get_StatusBar()
-//{
-//	return &m_wndStatusBar;
-//}
-
-// wlMainFrame diagnostics
 
 #ifdef _DEBUG
 void wlMainFrame::AssertValid() const
