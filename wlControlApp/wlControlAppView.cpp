@@ -55,9 +55,7 @@ void wlControlAppView::DoDataExchange(CDataExchange* pDX)
 
 BOOL wlControlAppView::PreCreateWindow(CREATESTRUCT& cs)
 {
-	// TODO: Modify the Window class or styles here by modifying
-	//  the CREATESTRUCT cs
-
+	cs.style &= ~FWS_ADDTOTITLE; //TODO: no effect?
 	return CFormView::PreCreateWindow(cs);
 }
 

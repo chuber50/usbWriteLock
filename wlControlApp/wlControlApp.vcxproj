@@ -220,6 +220,7 @@
     <None Include="res\wlControlApp.rc2" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="C:\Users\chuber\Downloads\VS2015 Image Library\2015_VSIcon\Lock\Lock.ico" />
     <Image Include="res\wlControlApp.ico" />
     <Image Include="res\wlControlAppDoc.ico" />
   </ItemGroup>
