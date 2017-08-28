@@ -1,5 +1,5 @@
 ;;;
-;;; Minispy
+;;; USBWl
 ;;;
 ;;;
 ;;; Copyright (c) 2001, Microsoft Corporation
@@ -11,13 +11,13 @@ Class       = "ActivityMonitor"                         ;This is determined by t
 ClassGuid   = {b86dff51-a31e-4bac-b3cf-e8cfe75c9fc2}    ;This value is determined by the Class
 Provider    = %ProviderString%
 DriverVer   = 06/16/2007,1.0.0.0
-CatalogFile = minispy.cat
+CatalogFile = usbwl.cat
 
 
 [DestinationDirs]
 DefaultDestDir          = 12
-Minispy.DriverFiles     = 12            ;%windir%\system32\drivers
-Minispy.UserFiles       = 10,FltMgr     ;%windir%\FltMgr
+USBWl.DriverFiles     = 12            ;%windir%\system32\drivers
+USBWl.UserFiles       = 10,FltMgr     ;%windir%\FltMgr
 
 ;;
 ;; Default install sections
@@ -25,17 +25,17 @@ Minispy.UserFiles       = 10,FltMgr     ;%windir%\FltMgr
 
 [DefaultInstall]
 OptionDesc          = %ServiceDescription%
-CopyFiles           = Minispy.DriverFiles, Minispy.UserFiles
+CopyFiles           = USBWl.DriverFiles, USBWl.UserFiles
 
 [DefaultInstall.Services]
-AddService          = %ServiceName%,,Minispy.Service
+AddService          = %ServiceName%,,USBWl.Service
 
 ;;
 ;; Default uninstall sections
 ;;
 
 [DefaultUninstall]
-DelFiles   = Minispy.DriverFiles, Minispy.UserFiles
+DelFiles   = USBWl.DriverFiles, USBWl.UserFiles
 
 [DefaultUninstall.Services]
 DelService = %ServiceName%,0x200      ;Ensure service is stopped before deleting
@@ -44,7 +44,7 @@ DelService = %ServiceName%,0x200      ;Ensure service is stopped before deleting
 ; Services Section
 ;
 
-[Minispy.Service]
+[USBWl.Service]
 DisplayName      = %ServiceName%
 Description      = %ServiceDescription%
 ServiceBinary    = %12%\%DriverName%.sys        ;%windir%\system32\drivers\
@@ -53,13 +53,13 @@ ServiceType      = 2                            ;SERVICE_FILE_SYSTEM_DRIVER
 StartType        = 3                            ;SERVICE_DEMAND_START
 ErrorControl     = 1                            ;SERVICE_ERROR_NORMAL
 LoadOrderGroup   = "FSFilter Activity Monitor"
-AddReg           = Minispy.AddRegistry
+AddReg           = USBWl.AddRegistry
 
 ;
 ; Registry Modifications
 ;
 
-[Minispy.AddRegistry]
+[USBWl.AddRegistry]
 HKR,,"SupportedFeatures",0x00010001,0x3
 HKR,"Instances","DefaultInstance",0x00000000,%DefaultInstance%
 HKR,"Instances\"%Instance1.Name%,"Altitude",0x00000000,%Instance1.Altitude%
@@ -73,15 +73,15 @@ HKR,"Instances\"%Instance3.Name%,"Flags",0x00010001,%Instance3.Flags%
 ; Copy Files
 ;
 
-[Minispy.DriverFiles]
+[USBWl.DriverFiles]
 %DriverName%.sys
 
-[Minispy.UserFiles]
+[USBWl.UserFiles]
 %UserAppName%.exe
 
 [SourceDisksFiles]
-minispy.sys = 1,,
-minispy.exe = 1,,
+USBWl.sys = 1,,
+USBWl.exe = 1,,
 
 [SourceDisksNames]
 1 = %DiskId1%,,,
@@ -92,20 +92,20 @@ minispy.exe = 1,,
 
 [Strings]
 ProviderString          = "TODO-Set-Provider"
-ServiceDescription      = "Minispy mini-filter driver"
-ServiceName             = "Minispy"
-DriverName              = "minispy"
+ServiceDescription      = "USBWl mini-filter driver"
+ServiceName             = "USBWl"
+DriverName              = "USBWl"
 UserAppName             = "wlControlApp"
-DiskId1                 = "Minispy Device Installation Disk"
+DiskId1                 = "USBWl Device Installation Disk"
 
 ;Instances specific information.
-DefaultInstance         = "Minispy - Top Instance"
-Instance1.Name          = "Minispy - Middle Instance"
+DefaultInstance         = "USBWl - Top Instance"
+Instance1.Name          = "USBWl - Middle Instance"
 Instance1.Altitude      = "370000"
 Instance1.Flags         = 0x1          ; Suppress automatic attachments
-Instance2.Name          = "Minispy - Bottom Instance"
+Instance2.Name          = "USBWl - Bottom Instance"
 Instance2.Altitude      = "361000"
 Instance2.Flags         = 0x1          ; Suppress automatic attachments
-Instance3.Name          = "Minispy - Top Instance"
+Instance3.Name          = "USBWl - Top Instance"
 Instance3.Altitude      = "385100"
 Instance3.Flags         = 0x1          ; Suppress automatic attachments

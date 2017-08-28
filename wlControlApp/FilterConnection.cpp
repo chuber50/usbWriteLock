@@ -56,7 +56,7 @@ HRESULT FilterConnection::LoadDriver()
 
 		if (GetLastError() == ERROR_SUCCESS)
 		{
-			hResult = FilterLoad(MINISPY_NAME);
+			hResult = FilterLoad(USBWL_NAME);
 		}
 	}
 
@@ -195,7 +195,7 @@ Determine if our filter is attached to this volume
 		//  Bump the instance count when we find a match
 		//
 
-		if (_wcsicmp(filtername, MINISPY_NAME) == 0) {
+		if (_wcsicmp(filtername, USBWL_NAME) == 0) {
 			instanceCount++;
 		}
 
@@ -251,7 +251,7 @@ HRESULT FilterConnection::attachFilterToDevice(std::wstring volumeName)
 	WCHAR instanceName[INSTANCE_NAME_MAX_CHARS + 1];
 
 	//https://fsfilters.blogspot.de/2011/07/more-on-instances-and-volumes.html
-	hResult = FilterAttach(MINISPY_NAME,
+	hResult = FilterAttach(USBWL_NAME,
 		PWSTR(&volumeName[0]),
 		NULL, // instance name
 		sizeof(instanceName),
@@ -265,7 +265,7 @@ HRESULT FilterConnection::detachFilterFromDevice(std::wstring volumeName)
 	HRESULT hResult;
 
 	// instance does not matter - we only hook at one altitude
-	hResult = FilterDetach(MINISPY_NAME,
+	hResult = FilterDetach(USBWL_NAME,
 		PWSTR(&volumeName[0]),
 		NULL); 
 

@@ -626,29 +626,37 @@ Return Value:
 
 	if (Data && Data->Iopb && Data->Iopb->MajorFunction == IRP_MJ_CREATE)
 	{
-		//http://www.osronline.com/showThread.cfm?link=79773
-		PFLT_IO_PARAMETER_BLOCK IopbPtr = Data->Iopb;
-		PFLT_PARAMETERS ParameterPtr = &IopbPtr->Parameters;
-		PIO_SECURITY_CONTEXT SecurityContextPtr = ParameterPtr->Create.SecurityContext;
+		if (Data->Iopb->MajorFunction == IRP_MJ_CREATE)
+		{
+			//http://www.osronline.com/showThread.cfm?link=79773
+			PFLT_IO_PARAMETER_BLOCK IopbPtr = Data->Iopb;
+			PFLT_PARAMETERS ParameterPtr = &IopbPtr->Parameters;
+			PIO_SECURITY_CONTEXT SecurityContextPtr = ParameterPtr->Create.SecurityContext;
 
-		ULONG createDisposition = (Data->Iopb->Parameters.Create.Options >> 24) & 0x000000FF;
-		BOOLEAN isNewFile = ((FILE_SUPERSEDE == createDisposition)
-			|| (FILE_CREATE == createDisposition)
-			|| (FILE_OPEN_IF == createDisposition)
-			|| (FILE_OVERWRITE == createDisposition)
-			|| (FILE_OVERWRITE_IF == createDisposition));
+			ACCESS_MASK desiredAccess = SecurityContextPtr->DesiredAccess;
+			BOOLEAN writeOperation = ((desiredAccess & (FILE_WRITE_DATA | FILE_WRITE_ATTRIBUTES | FILE_SUPERSEDE | GENERIC_WRITE | FILE_WRITE_EA | FILE_APPEND_DATA | DELETE | WRITE_DAC | WRITE_OWNER | FILE_ADD_FILE | FILE_ADD_SUBDIRECTORY)) ||
+				(Data->Iopb->Parameters.Create.Options & FILE_DELETE_ON_CLOSE));
 
-		ACCESS_MASK desiredAccess = SecurityContextPtr->DesiredAccess;
-		BOOLEAN writeOperation = ((desiredAccess & (FILE_WRITE_DATA | FILE_WRITE_ATTRIBUTES | FILE_SUPERSEDE | GENERIC_WRITE | FILE_WRITE_EA | FILE_APPEND_DATA | DELETE | WRITE_DAC | WRITE_OWNER)) ||
-			(Data->Iopb->Parameters.Create.Options & FILE_DELETE_ON_CLOSE) || isNewFile);
+			if (writeOperation) {
+				Data->IoStatus.Status = STATUS_ACCESS_DENIED; //STATUS_CANCELLED; 
+				Data->IoStatus.Information = 0;
+				DbgPrint("IRP Major: %u \n", Data->Iopb->MajorFunction);
+				DbgPrint("IRP Minor: %u \n", Data->Iopb->MinorFunction);
+				return FLT_PREOP_COMPLETE;
+			}
 
-		if (writeOperation) {
-			Data->IoStatus.Status = STATUS_ACCESS_DENIED; //STATUS_CANCELLED; 
-			Data->IoStatus.Information = 0;
-			DbgPrint("IRP Major: %u \n", Data->Iopb->MajorFunction);
-			DbgPrint("IRP Minor: %u \n", Data->Iopb->MinorFunction);
-			return FLT_PREOP_COMPLETE;
+			ULONG createDisposition = Data->Iopb->Parameters.Create.Options;
+			BOOLEAN isNewFile = (createDisposition & (FILE_SUPERSEDE | FILE_CREATE | FILE_OPEN_IF | FILE_OVERWRITE | FILE_OVERWRITE_IF | FILE_DIRECTORY_FILE | FILE_NON_DIRECTORY_FILE | FILE_ADD_FILE | FILE_ADD_SUBDIRECTORY));
+
+			if (isNewFile) {
+				Data->IoStatus.Status = STATUS_ACCESS_DENIED; //STATUS_CANCELLED; 
+				Data->IoStatus.Information = 0;
+				DbgPrint("IRP Major: %u \n", Data->Iopb->MajorFunction);
+				DbgPrint("IRP Minor: %u \n", Data->Iopb->MinorFunction);
+				return FLT_PREOP_COMPLETE;
+			}
 		}
+		
 	}
 
 

@@ -2,7 +2,7 @@
 #include <stdexcept>
 #include <vector>
 
-#define MINISPY_NAME            L"MiniSpy"
+#define USBWL_NAME            L"UsbWL"
 #define PATH_PREFIX				L"\\\\.\\"
 
 struct volume {
