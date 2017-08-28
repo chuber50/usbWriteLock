@@ -10,7 +10,7 @@ _Analysis_mode_(_Analysis_code_type_user_code_)
 #include <assert.h>
 #include <strsafe.h>
 #include <fltUser.h>
-#include "minispy.h"
+#include "usbwl.h"
 #include <vector>
 #include <algorithm>
 
@@ -26,7 +26,7 @@ FilterConnection::~FilterConnection()
 HRESULT FilterConnection::ConnectFilter()
 {
 	HRESULT hResult = S_OK;
-	hResult = FilterConnectCommunicationPort(MINISPY_PORT_NAME,
+	hResult =  FilterConnectCommunicationPort(WRITELOCK_PORT_NAME,
 		0,
 		nullptr,
 		0,

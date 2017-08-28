@@ -18,13 +18,13 @@ Environment:
 #include <initguid.h>
 #include <stdio.h>
 
-#include "mspyKern.h"
+#include "usbWlKern.h"
 
 //
-// Can't pull in wsk.h until after MINISPY_VISTA is defined
+// Can't pull in wsk.h until after USBWL_VISTA is defined
 //
 
-#if MINISPY_VISTA
+#if USBWL_VISTA
 #include <ntifs.h>
 #include <wsk.h>
 #endif
@@ -35,7 +35,7 @@ Environment:
 
 #ifdef ALLOC_PRAGMA
     #pragma alloc_text(INIT, SpyReadDriverParameters)
-#if MINISPY_VISTA
+#if USBWL_VISTA
     #pragma alloc_text(PAGE, SpyBuildEcpDataString)
     #pragma alloc_text(PAGE, SpyParseEcps)
 #endif
@@ -114,7 +114,7 @@ SpyAllocateBuffer (
 
 Routine Description:
 
-    Allocates a new buffer from the MiniSpyData.FreeBufferList if there is
+    Allocates a new buffer from the UsbWlData.FreeBufferList if there is
     enough memory to do so and we have not exceed our maximum buffer
     count.
 
@@ -144,11 +144,11 @@ Return Value:
     //  See if we have room to allocate more buffers
     //
 
-    if (MiniSpyData.RecordsAllocated < MiniSpyData.MaxRecordsToAllocate) {
+    if (UsbWlData.RecordsAllocated < UsbWlData.MaxRecordsToAllocate) {
 
-        InterlockedIncrement( &MiniSpyData.RecordsAllocated );
+        InterlockedIncrement( &UsbWlData.RecordsAllocated );
 
-        newBuffer = ExAllocateFromNPagedLookasideList( &MiniSpyData.FreeBufferList );
+        newBuffer = ExAllocateFromNPagedLookasideList( &UsbWlData.FreeBufferList );
 
         if (newBuffer == NULL) {
 
@@ -157,7 +157,7 @@ Return Value:
             //  and return what type of memory we have.
             //
 
-            InterlockedDecrement( &MiniSpyData.RecordsAllocated );
+            InterlockedDecrement( &UsbWlData.RecordsAllocated );
 
             newRecordType = RECORD_TYPE_FLAG_OUT_OF_MEMORY;
         }
@@ -205,8 +205,8 @@ Return Value:
     //  Free the memory, update the counter
     //
 
-    InterlockedDecrement( &MiniSpyData.RecordsAllocated );
-    ExFreeToNPagedLookasideList( &MiniSpyData.FreeBufferList, Buffer );
+    InterlockedDecrement( &UsbWlData.RecordsAllocated );
+    ExFreeToNPagedLookasideList( &UsbWlData.FreeBufferList, Buffer );
 }
 
 
@@ -254,9 +254,9 @@ Return Value:
         //  in use.  If not, we will use it
         //
 
-        if (!InterlockedExchange( &MiniSpyData.StaticBufferInUse, TRUE )) {
+        if (!InterlockedExchange( &UsbWlData.StaticBufferInUse, TRUE )) {
 
-            newRecord = (PRECORD_LIST)MiniSpyData.OutOfMemoryBuffer;
+            newRecord = (PRECORD_LIST)UsbWlData.OutOfMemoryBuffer;
             initialRecordType |= RECORD_TYPE_FLAG_STATIC;
         }
     }
@@ -273,7 +273,7 @@ Return Value:
 
         newRecord->LogRecord.RecordType = initialRecordType;
         newRecord->LogRecord.Length = sizeof(LOG_RECORD);
-        newRecord->LogRecord.SequenceNumber = InterlockedIncrement( &MiniSpyData.LogSequenceNumber );
+        newRecord->LogRecord.SequenceNumber = InterlockedIncrement( &UsbWlData.LogSequenceNumber );
         RtlZeroMemory( &newRecord->LogRecord.Data, sizeof( RECORD_DATA ) );
     }
 
@@ -310,8 +310,8 @@ Return Value:
         // This was our static buffer, mark it available.
         //
 
-        FLT_ASSERT(MiniSpyData.StaticBufferInUse);
-        MiniSpyData.StaticBufferInUse = FALSE;
+        FLT_ASSERT(UsbWlData.StaticBufferInUse);
+        UsbWlData.StaticBufferInUse = FALSE;
 
     } else {
 
@@ -319,7 +319,7 @@ Return Value:
     }
 }
 
-#if MINISPY_VISTA
+#if USBWL_VISTA
 
 VOID
 SpyBuildEcpDataString (
@@ -354,7 +354,7 @@ Return Value:
     PRECORD_DATA recordData = &RecordList->LogRecord.Data;
     PWCHAR printPointer = EcpData->Buffer;
 
-#if MINISPY_WIN7
+#if USBWL_WIN7
     TCHAR addressBuffer[ADDRESS_STRING_BUFFER_SIZE];
     ULONG addressBufferLen;
     LONG addressConvStatus;
@@ -389,7 +389,7 @@ Return Value:
     //  If we recognize any of the ECPs, add their data to the log string.
     //
 
-#if MINISPY_WIN7
+#if USBWL_WIN7
 
     //
     //  Oplock key ECP
@@ -749,7 +749,7 @@ Return Value:
     //  Try to get an ECP list pointer from filter manager
     //
 
-    status = FltGetEcpListFromCallbackData( MiniSpyData.Filter, 
+    status = FltGetEcpListFromCallbackData( UsbWlData.Filter, 
                                             Data,
                                             &ecpList );
 
@@ -766,7 +766,7 @@ Return Value:
         //
 
         while (NT_SUCCESS(
-                   FltGetNextExtraCreateParameter( MiniSpyData.Filter, 
+                   FltGetNextExtraCreateParameter( UsbWlData.Filter, 
                                                    ecpList, 
                                                    ecpContext,
                                                    (LPGUID) &ecpGuid,
@@ -797,7 +797,7 @@ Return Value:
                 offset = EcpPrefetchOpen;
             }
 
-#if MINISPY_WIN7
+#if USBWL_WIN7
 
             //
             //  There are three system-defined ECPs that are only available
@@ -839,7 +839,7 @@ Return Value:
             //
 
             if ((0 != ecpFlag) &&
-                !FltIsEcpFromUserMode( MiniSpyData.Filter, ecpContext )) {
+                !FltIsEcpFromUserMode( UsbWlData.Filter, ecpContext )) {
 
                 //
                 //  If ecpFlag was set, we found a MiniSpy-supported ECP.
@@ -1218,7 +1218,7 @@ Routine Description:
 
 Arguments:
 
-    RecordList - The record to append to the MiniSpyData.OutputBufferList
+    RecordList - The record to append to the UsbWlData.OutputBufferList
 
 Return Value:
 
@@ -1230,9 +1230,9 @@ Return Value:
 {
     KIRQL oldIrql;
 
-    KeAcquireSpinLock(&MiniSpyData.OutputBufferLock, &oldIrql);
-    InsertTailList(&MiniSpyData.OutputBufferList, &RecordList->List);
-    KeReleaseSpinLock(&MiniSpyData.OutputBufferLock, oldIrql);
+    KeAcquireSpinLock(&UsbWlData.OutputBufferLock, &oldIrql);
+    InsertTailList(&UsbWlData.OutputBufferList, &RecordList->List);
+    KeReleaseSpinLock(&UsbWlData.OutputBufferLock, oldIrql);
 }
 
 
@@ -1278,9 +1278,9 @@ Return Value:
     KIRQL oldIrql;
     BOOLEAN recordsAvailable = FALSE;
 
-    KeAcquireSpinLock( &MiniSpyData.OutputBufferLock, &oldIrql );
+    KeAcquireSpinLock( &UsbWlData.OutputBufferLock, &oldIrql );
 
-    while (!IsListEmpty( &MiniSpyData.OutputBufferList ) && (OutputBufferLength > 0)) {
+    while (!IsListEmpty( &UsbWlData.OutputBufferList ) && (OutputBufferLength > 0)) {
 
         //
         //  Mark we have records
@@ -1292,7 +1292,7 @@ Return Value:
         //  Get the next available record
         //
 
-        pList = RemoveHeadList( &MiniSpyData.OutputBufferList );
+        pList = RemoveHeadList( &UsbWlData.OutputBufferList );
 
         pRecordList = CONTAINING_RECORD( pList, RECORD_LIST, List );
 
@@ -1319,11 +1319,11 @@ Return Value:
 
         if (OutputBufferLength < pLogRecord->Length) {
 
-            InsertHeadList( &MiniSpyData.OutputBufferList, pList );
+            InsertHeadList( &UsbWlData.OutputBufferList, pList );
             break;
         }
 
-        KeReleaseSpinLock( &MiniSpyData.OutputBufferLock, oldIrql );
+        KeReleaseSpinLock( &UsbWlData.OutputBufferLock, oldIrql );
 
         //
         //  The lock is released, return the data, adjust pointers.
@@ -1338,9 +1338,9 @@ Return Value:
             //  Put the record back in
             //
 
-            KeAcquireSpinLock( &MiniSpyData.OutputBufferLock, &oldIrql );
-            InsertHeadList( &MiniSpyData.OutputBufferList, pList );
-            KeReleaseSpinLock( &MiniSpyData.OutputBufferLock, oldIrql );
+            KeAcquireSpinLock( &UsbWlData.OutputBufferLock, &oldIrql );
+            InsertHeadList( &UsbWlData.OutputBufferList, pList );
+            KeReleaseSpinLock( &UsbWlData.OutputBufferLock, oldIrql );
 
             return GetExceptionCode();
 
@@ -1358,10 +1358,10 @@ Return Value:
         //  Relock the list
         //
 
-        KeAcquireSpinLock( &MiniSpyData.OutputBufferLock, &oldIrql );
+        KeAcquireSpinLock( &UsbWlData.OutputBufferLock, &oldIrql );
     }
 
-    KeReleaseSpinLock( &MiniSpyData.OutputBufferLock, oldIrql );
+    KeReleaseSpinLock( &UsbWlData.OutputBufferLock, oldIrql );
 
     //
     //  Set proper status
@@ -1420,21 +1420,21 @@ Return Value:
     PRECORD_LIST pRecordList;
     KIRQL oldIrql;
 
-    KeAcquireSpinLock( &MiniSpyData.OutputBufferLock, &oldIrql );
+    KeAcquireSpinLock( &UsbWlData.OutputBufferLock, &oldIrql );
 
-    while (!IsListEmpty( &MiniSpyData.OutputBufferList )) {
+    while (!IsListEmpty( &UsbWlData.OutputBufferList )) {
 
-        pList = RemoveHeadList( &MiniSpyData.OutputBufferList );
-        KeReleaseSpinLock( &MiniSpyData.OutputBufferLock, oldIrql );
+        pList = RemoveHeadList( &UsbWlData.OutputBufferList );
+        KeReleaseSpinLock( &UsbWlData.OutputBufferLock, oldIrql );
 
         pRecordList = CONTAINING_RECORD( pList, RECORD_LIST, List );
 
         SpyFreeRecord( pRecordList );
 
-        KeAcquireSpinLock( &MiniSpyData.OutputBufferLock, &oldIrql );
+        KeAcquireSpinLock( &UsbWlData.OutputBufferLock, &oldIrql );
     }
 
-    KeReleaseSpinLock( &MiniSpyData.OutputBufferLock, oldIrql );
+    KeReleaseSpinLock( &UsbWlData.OutputBufferLock, oldIrql );
 }
 
 //---------------------------------------------------------------------------
@@ -1513,7 +1513,7 @@ Return Value:
 
         pValuePartialInfo = (PKEY_VALUE_PARTIAL_INFORMATION) buffer;
         FLT_ASSERT( pValuePartialInfo->Type == REG_DWORD );
-        MiniSpyData.MaxRecordsToAllocate = *((PLONG)&(pValuePartialInfo->Data));
+        UsbWlData.MaxRecordsToAllocate = *((PLONG)&(pValuePartialInfo->Data));
     }
 
     //
@@ -1533,7 +1533,7 @@ Return Value:
 
         pValuePartialInfo = (PKEY_VALUE_PARTIAL_INFORMATION) buffer;
         FLT_ASSERT( pValuePartialInfo->Type == REG_DWORD );
-        MiniSpyData.NameQueryMethod = *((PLONG)&(pValuePartialInfo->Data));
+        UsbWlData.NameQueryMethod = *((PLONG)&(pValuePartialInfo->Data));
     }
 
     ZwClose(driverRegKey);

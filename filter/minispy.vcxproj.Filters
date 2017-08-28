@@ -35,7 +35,7 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="*.h;*.hpp;*.hxx;*.hm;*.inl;*.xsd">
+    <ClInclude Include="usbWlKern.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -17,8 +17,8 @@ Environment:
     Kernel and user mode
 
 --*/
-#ifndef __MINISPY_H__
-#define __MINISPY_H__
+#ifndef __USBWL_H__
+#define __USBWL_H__
 
 
 //
@@ -53,8 +53,8 @@ Environment:
 //  Version definition
 //
 
-#define MINISPY_MAJ_VERSION 2
-#define MINISPY_MIN_VERSION 0
+#define USBWL_MAJ_VERSION 2
+#define USBWL_MIN_VERSION 0
 
 typedef struct _MINISPYVER {
 
@@ -67,7 +67,7 @@ typedef struct _MINISPYVER {
 //  Name of minispy's communication server port
 //
 
-#define MINISPY_PORT_NAME                   L"\\MiniSpyPort"
+#define WRITELOCK_PORT_NAME                   L"\\MiniSpyPort"
 
 //
 //  Local definitions for passing parameters between the filter and user mode

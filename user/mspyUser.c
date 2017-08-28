@@ -202,7 +202,7 @@ Return Value:
 
     printf( "Connecting to filter's port...\n" );
 
-    hResult = FilterConnectCommunicationPort( MINISPY_PORT_NAME,
+    hResult = FilterConnectCommunicationPort( WRITELOCK_PORT_NAME,
                                               0,
                                               NULL,
                                               0,

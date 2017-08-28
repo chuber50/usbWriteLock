@@ -16,13 +16,13 @@ Environment:
     Kernel mode
 
 --*/
-#ifndef __MSPYKERN_H__
-#define __MSPYKERN_H__
+#ifndef __USBWLKERN_H__
+#define __USBWLKERN_H__
 
 #include <fltKernel.h>
 //#include <dontuse.h>
 #include <suppress.h>
-#include "minispy.h"
+#include "usbwl.h"
 
 #pragma prefast(disable:__WARNING_ENCODE_MEMBER_FUNCTION_POINTER, "Not valid for kernel mode drivers")
 
@@ -39,16 +39,16 @@ Environment:
 //  older ECPs
 //
 
-#define MINISPY_WIN8     (NTDDI_VERSION >= NTDDI_WIN8)
-#define MINISPY_WIN7     (NTDDI_VERSION >= NTDDI_WIN7)
-#define MINISPY_VISTA    (NTDDI_VERSION >= NTDDI_VISTA)
-#define MINISPY_NOT_W2K  (OSVER(NTDDI_VERSION) > NTDDI_WIN2K)
+#define USBWL_WIN8     (NTDDI_VERSION >= NTDDI_WIN8)
+#define USBWL_WIN7     (NTDDI_VERSION >= NTDDI_WIN7)
+#define USBWL_VISTA    (NTDDI_VERSION >= NTDDI_VISTA)
+#define USBWL_NOT_W2K  (OSVER(NTDDI_VERSION) > NTDDI_WIN2K)
 
 //
 //  Define callback types for Vista
 //
 
-#if MINISPY_VISTA
+#if USBWL_VISTA
 
 //
 //  Dynamically imported Filter Mgr APIs
@@ -84,7 +84,7 @@ typedef NTSTATUS
 
 #define ECP_TYPE_FLAG_PREFETCH                   0x00000001
 
-#if MINISPY_WIN7
+#if USBWL_WIN7
 
 #define ECP_TYPE_FLAG_OPLOCK_KEY                 0x00000002
 #define ECP_TYPE_FLAG_NFS                        0x00000004
@@ -198,7 +198,7 @@ typedef struct _MINISPY_DATA {
 
     ULONG DebugFlags;
 
-#if MINISPY_VISTA
+#if USBWL_VISTA
 
     //
     //  Dynamically imported Filter Mgr APIs
@@ -212,7 +212,7 @@ typedef struct _MINISPY_DATA {
 
 #endif
 
-} MINISPY_DATA, *PMINISPY_DATA;
+} USBWL_DATA, *PUSBWL_DATA;
 
 
 //
@@ -223,11 +223,11 @@ typedef struct _MINISPY_TRANSACTION_CONTEXT {
     ULONG Flags;
     ULONG Count;
 
-}MINISPY_TRANSACTION_CONTEXT, *PMINISPY_TRANSACTION_CONTEXT;
+}USBWL_TRANSACTION_CONTEXT, *PMINISPY_TRANSACTION_CONTEXT;
 
 //
 //  This macro below is used to set the flags field in minispy's
-//  MINISPY_TRANSACTION_CONTEXT structure once it has been
+//  USBWL_TRANSACTION_CONTEXT structure once it has been
 //  successfully enlisted in the transaction.
 //
 
@@ -237,7 +237,7 @@ typedef struct _MINISPY_TRANSACTION_CONTEXT {
 //  Minispy's global variables
 //
 
-extern MINISPY_DATA MiniSpyData;
+extern USBWL_DATA UsbWlData;
 
 #define DEFAULT_MAX_RECORDS_TO_ALLOCATE     500
 #define MAX_RECORDS_TO_ALLOCATE             L"MaxRecords"
@@ -262,14 +262,14 @@ extern const FLT_REGISTRATION FilterRegistration;
 //---------------------------------------------------------------------------
 
 FLT_PREOP_CALLBACK_STATUS
-SpyPreOperationCallback (
+WlPreOperationCallback (
     _Inout_ PFLT_CALLBACK_DATA Data,
     _In_ PCFLT_RELATED_OBJECTS FltObjects,
     _Flt_CompletionContext_Outptr_ PVOID *CompletionContext
     );
 
 FLT_POSTOP_CALLBACK_STATUS
-SpyPostOperationCallback (
+WlPostOperationCallback (
     _Inout_ PFLT_CALLBACK_DATA Data,
     _In_ PCFLT_RELATED_OBJECTS FltObjects,
     _In_ PVOID CompletionContext,
@@ -277,19 +277,19 @@ SpyPostOperationCallback (
     );
 
 NTSTATUS
-SpyKtmNotificationCallback (
+WlKtmNotificationCallback (
     _In_ PCFLT_RELATED_OBJECTS FltObjects,
     _In_ PFLT_CONTEXT TransactionContext,
     _In_ ULONG TransactionNotification
     );
 
 NTSTATUS
-SpyFilterUnload (
+WlFilterUnload (
     _In_ FLT_FILTER_UNLOAD_FLAGS Flags
     );
 
 NTSTATUS
-SpyQueryTeardown (
+WlQueryTeardown (
     _In_ PCFLT_RELATED_OBJECTS FltObjects,
     _In_ FLT_INSTANCE_QUERY_TEARDOWN_FLAGS Flags
     );
@@ -332,7 +332,7 @@ SpyFreeRecord (
     _In_ PRECORD_LIST Record
     );
 
-#if MINISPY_VISTA
+#if USBWL_VISTA
 
 VOID
 SpyParseEcps (
@@ -403,7 +403,7 @@ SpyEmptyOutputBufferList (
     );
 
 VOID
-SpyDeleteTxfContext (
+WlDeleteTxfContext (
     _Inout_ PFLT_CONTEXT  Context,
     _In_ FLT_CONTEXT_TYPE  ContextType
     );

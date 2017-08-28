@@ -21,7 +21,7 @@ Environment:
 
 #include <stdio.h>
 #include <fltUser.h>
-#include "minispy.h"
+#include "usbwl.h"
 
 #define BUFFER_SIZE     4096
 

@@ -2,28 +2,20 @@
 
 Copyright (c) 1989-2002  Microsoft Corporation
 
-Module Name:
-
-    MiniSpy.c
-
-Abstract:
-
-    This is the main module for the MiniSpy mini-filter.
-
 Environment:
 
     Kernel mode
 
 --*/
 
-#include "mspyKern.h"
+#include "usbWlKern.h"
 #include <stdio.h>
 
 //
 //  Global variables
 //
 
-MINISPY_DATA MiniSpyData;
+USBWL_DATA UsbWlData;
 NTSTATUS StatusToBreakOn = 0;
 
 //---------------------------------------------------------------------------
@@ -72,8 +64,8 @@ SpyEnlistInTransaction (
 
 #ifdef ALLOC_PRAGMA
     #pragma alloc_text(INIT, DriverEntry)
-    #pragma alloc_text(PAGE, SpyFilterUnload)
-    #pragma alloc_text(PAGE, SpyQueryTeardown)
+    #pragma alloc_text(PAGE, WlFilterUnload)
+    #pragma alloc_text(PAGE, WlQueryTeardown)
     #pragma alloc_text(PAGE, SpyConnect)
     #pragma alloc_text(PAGE, SpyDisconnect)
     #pragma alloc_text(PAGE, SpyMessage)
@@ -123,17 +115,17 @@ Return Value:
         // Initialize global data structures.
         //
 
-        MiniSpyData.LogSequenceNumber = 0;
-        MiniSpyData.MaxRecordsToAllocate = DEFAULT_MAX_RECORDS_TO_ALLOCATE;
-        MiniSpyData.RecordsAllocated = 0;
-        MiniSpyData.NameQueryMethod = DEFAULT_NAME_QUERY_METHOD;
+        UsbWlData.LogSequenceNumber = 0;
+        UsbWlData.MaxRecordsToAllocate = DEFAULT_MAX_RECORDS_TO_ALLOCATE;
+        UsbWlData.RecordsAllocated = 0;
+        UsbWlData.NameQueryMethod = DEFAULT_NAME_QUERY_METHOD;
 
-        MiniSpyData.DriverObject = DriverObject;
+        UsbWlData.DriverObject = DriverObject;
 
-        InitializeListHead( &MiniSpyData.OutputBufferList );
-        KeInitializeSpinLock( &MiniSpyData.OutputBufferLock );
+        InitializeListHead( &UsbWlData.OutputBufferList );
+        KeInitializeSpinLock( &UsbWlData.OutputBufferLock );
 
-        ExInitializeNPagedLookasideList( &MiniSpyData.FreeBufferList,
+        ExInitializeNPagedLookasideList( &UsbWlData.FreeBufferList,
                                          NULL,
                                          NULL,
                                          POOL_NX_ALLOCATION,
@@ -141,7 +133,7 @@ Return Value:
                                          SPY_TAG,
                                          0 );
 
-#if MINISPY_VISTA
+#if USBWL_VISTA
 
         //
         //  Dynamically import FilterMgr APIs for transaction support
@@ -149,9 +141,9 @@ Return Value:
 
 #pragma warning(push)
 #pragma warning(disable:4055) // type cast from data pointer to function pointer
-        MiniSpyData.PFltSetTransactionContext = (PFLT_SET_TRANSACTION_CONTEXT) FltGetRoutineAddress( "FltSetTransactionContext" );
-        MiniSpyData.PFltGetTransactionContext = (PFLT_GET_TRANSACTION_CONTEXT) FltGetRoutineAddress( "FltGetTransactionContext" );
-        MiniSpyData.PFltEnlistInTransaction = (PFLT_ENLIST_IN_TRANSACTION) FltGetRoutineAddress( "FltEnlistInTransaction" );
+        UsbWlData.PFltSetTransactionContext = (PFLT_SET_TRANSACTION_CONTEXT) FltGetRoutineAddress( "FltSetTransactionContext" );
+        UsbWlData.PFltGetTransactionContext = (PFLT_GET_TRANSACTION_CONTEXT) FltGetRoutineAddress( "FltGetTransactionContext" );
+        UsbWlData.PFltEnlistInTransaction = (PFLT_ENLIST_IN_TRANSACTION) FltGetRoutineAddress( "FltEnlistInTransaction" );
 #pragma warning(pop)
 
 #endif
@@ -168,7 +160,7 @@ Return Value:
 
         status = FltRegisterFilter( DriverObject,
                                     &FilterRegistration,
-                                    &MiniSpyData.Filter );
+                                    &UsbWlData.Filter );
 
         if (!NT_SUCCESS( status )) {
 
@@ -183,7 +175,7 @@ Return Value:
             leave;
         }
 
-        RtlInitUnicodeString( &uniString, MINISPY_PORT_NAME );
+        RtlInitUnicodeString( &uniString, WRITELOCK_PORT_NAME );
 
         InitializeObjectAttributes( &oa,
                                     &uniString,
@@ -191,8 +183,8 @@ Return Value:
                                     NULL,
                                     sd );
 
-        status = FltCreateCommunicationPort( MiniSpyData.Filter,
-                                             &MiniSpyData.ServerPort,
+        status = FltCreateCommunicationPort( UsbWlData.Filter,
+                                             &UsbWlData.ServerPort,
                                              &oa,
                                              NULL,
                                              SpyConnect,
@@ -210,21 +202,21 @@ Return Value:
         //  We are now ready to start filtering
         //
 
-        status = FltStartFiltering( MiniSpyData.Filter );
+        status = FltStartFiltering( UsbWlData.Filter );
 
     } finally {
 
         if (!NT_SUCCESS( status ) ) {
 
-             if (NULL != MiniSpyData.ServerPort) {
-                 FltCloseCommunicationPort( MiniSpyData.ServerPort );
+             if (NULL != UsbWlData.ServerPort) {
+                 FltCloseCommunicationPort( UsbWlData.ServerPort );
              }
 
-             if (NULL != MiniSpyData.Filter) {
-                 FltUnregisterFilter( MiniSpyData.Filter );
+             if (NULL != UsbWlData.Filter) {
+                 FltUnregisterFilter( UsbWlData.Filter );
              }
 
-             ExDeleteNPagedLookasideList( &MiniSpyData.FreeBufferList );
+             ExDeleteNPagedLookasideList( &UsbWlData.FreeBufferList );
         }
     }
 
@@ -268,8 +260,8 @@ Return Value
     UNREFERENCED_PARAMETER( SizeOfContext);
     UNREFERENCED_PARAMETER( ConnectionCookie );
 
-    FLT_ASSERT( MiniSpyData.ClientPort == NULL );
-    MiniSpyData.ClientPort = ClientPort;
+    FLT_ASSERT( UsbWlData.ClientPort == NULL );
+    UsbWlData.ClientPort = ClientPort;
     return STATUS_SUCCESS;
 }
 
@@ -302,11 +294,11 @@ Return value
     //  Close our handle
     //
 
-    FltCloseClientPort( MiniSpyData.Filter, &MiniSpyData.ClientPort );
+    FltCloseClientPort( UsbWlData.Filter, &UsbWlData.ClientPort );
 }
 
 NTSTATUS
-SpyFilterUnload (
+WlFilterUnload (
     _In_ FLT_FILTER_UNLOAD_FLAGS Flags
     )
 /*++
@@ -339,19 +331,19 @@ Return Value:
     //  Close the server port. This will stop new connections.
     //
 
-    FltCloseCommunicationPort( MiniSpyData.ServerPort );
+    FltCloseCommunicationPort( UsbWlData.ServerPort );
 
-    FltUnregisterFilter( MiniSpyData.Filter );
+    FltUnregisterFilter( UsbWlData.Filter );
 
     SpyEmptyOutputBufferList();
-    ExDeleteNPagedLookasideList( &MiniSpyData.FreeBufferList );
+    ExDeleteNPagedLookasideList( &UsbWlData.FreeBufferList );
 
     return STATUS_SUCCESS;
 }
 
 
 NTSTATUS
-SpyQueryTeardown (
+WlQueryTeardown (
     _In_ PCFLT_RELATED_OBJECTS FltObjects,
     _In_ FLT_INSTANCE_QUERY_TEARDOWN_FLAGS Flags
     )
@@ -557,8 +549,8 @@ Return Value:
 
                 try {
 
-                    ((PMINISPYVER)OutputBuffer)->Major = MINISPY_MAJ_VERSION;
-                    ((PMINISPYVER)OutputBuffer)->Minor = MINISPY_MIN_VERSION;
+                    ((PMINISPYVER)OutputBuffer)->Major = USBWL_MAJ_VERSION;
+                    ((PMINISPYVER)OutputBuffer)->Minor = USBWL_MIN_VERSION;
 
                 } except (SpyExceptionFilter( GetExceptionInformation(), TRUE )) {
 
@@ -590,7 +582,7 @@ Return Value:
 
 FLT_PREOP_CALLBACK_STATUS
 #pragma warning(suppress: 6262) // higher than usual stack usage is considered safe in this case
-SpyPreOperationCallback (
+WlPreOperationCallback (
     _Inout_ PFLT_CALLBACK_DATA Data,
     _In_ PCFLT_RELATED_OBJECTS FltObjects,
     _Flt_CompletionContext_Outptr_ PVOID *CompletionContext
@@ -632,20 +624,26 @@ Return Value:
     UNICODE_STRING ecpData;
     WCHAR ecpDataBuffer[MAX_NAME_SPACE/sizeof(WCHAR)];
 
-
-	//http://www.osronline.com/showThread.cfm?link=79773
-	PFLT_IO_PARAMETER_BLOCK IopbPtr = Data->Iopb;
-	PFLT_PARAMETERS ParameterPtr = &IopbPtr->Parameters;
-	PIO_SECURITY_CONTEXT SecurityContextPtr = ParameterPtr->Create.SecurityContext;
-
-	if (Data->Iopb->MajorFunction == IRP_MJ_CREATE)
+	if (Data && Data->Iopb && Data->Iopb->MajorFunction == IRP_MJ_CREATE)
 	{
+		//http://www.osronline.com/showThread.cfm?link=79773
+		PFLT_IO_PARAMETER_BLOCK IopbPtr = Data->Iopb;
+		PFLT_PARAMETERS ParameterPtr = &IopbPtr->Parameters;
+		PIO_SECURITY_CONTEXT SecurityContextPtr = ParameterPtr->Create.SecurityContext;
+
+		ULONG createDisposition = (Data->Iopb->Parameters.Create.Options >> 24) & 0x000000FF;
+		BOOLEAN isNewFile = ((FILE_SUPERSEDE == createDisposition)
+			|| (FILE_CREATE == createDisposition)
+			|| (FILE_OPEN_IF == createDisposition)
+			|| (FILE_OVERWRITE == createDisposition)
+			|| (FILE_OVERWRITE_IF == createDisposition));
+
 		ACCESS_MASK desiredAccess = SecurityContextPtr->DesiredAccess;
-		BOOLEAN writeOperation = ((desiredAccess & (FILE_WRITE_DATA | FILE_WRITE_ATTRIBUTES | FILE_WRITE_EA | FILE_APPEND_DATA | DELETE | WRITE_DAC | WRITE_OWNER)) ||
-			(Data->Iopb->Parameters.Create.Options & FILE_DELETE_ON_CLOSE));
+		BOOLEAN writeOperation = ((desiredAccess & (FILE_WRITE_DATA | FILE_WRITE_ATTRIBUTES | FILE_SUPERSEDE | GENERIC_WRITE | FILE_WRITE_EA | FILE_APPEND_DATA | DELETE | WRITE_DAC | WRITE_OWNER)) ||
+			(Data->Iopb->Parameters.Create.Options & FILE_DELETE_ON_CLOSE) || isNewFile);
 
 		if (writeOperation) {
-			Data->IoStatus.Status = STATUS_CANCELLED; //STATUS_CANCELLED; 
+			Data->IoStatus.Status = STATUS_ACCESS_DENIED; //STATUS_CANCELLED; 
 			Data->IoStatus.Information = 0;
 			DbgPrint("IRP Major: %u \n", Data->Iopb->MajorFunction);
 			DbgPrint("IRP Minor: %u \n", Data->Iopb->MinorFunction);
@@ -679,7 +677,7 @@ Return Value:
 
             status = FltGetFileNameInformation( Data,
                                                 FLT_FILE_NAME_NORMALIZED |
-                                                    MiniSpyData.NameQueryMethod,
+                                                    UsbWlData.NameQueryMethod,
                                                 &nameInfo );
 
         } else {
@@ -703,7 +701,7 @@ Return Value:
             //  Parse the name if requested
             //
 
-            if (FlagOn( MiniSpyData.DebugFlags, SPY_DEBUG_PARSE_NAMES )) {
+            if (FlagOn( UsbWlData.DebugFlags, SPY_DEBUG_PARSE_NAMES )) {
                 FltParseFileNameInformation( nameInfo );
             }
 
@@ -832,7 +830,7 @@ Return Value:
             //  this operation, do the completion processing now
             //
 
-            SpyPostOperationCallback( Data,
+            WlPostOperationCallback( Data,
                                       FltObjects,
                                       recordList,
                                       0 );
@@ -851,7 +849,7 @@ Return Value:
 
 
 FLT_POSTOP_CALLBACK_STATUS
-SpyPostOperationCallback (
+WlPostOperationCallback (
     _Inout_ PFLT_CALLBACK_DATA Data,
     _In_ PCFLT_RELATED_OBJECTS FltObjects,
     _In_ PVOID CompletionContext,
@@ -1010,7 +1008,7 @@ Return value
 --*/
 {
 
-#if MINISPY_VISTA
+#if USBWL_VISTA
 
     PMINISPY_TRANSACTION_CONTEXT transactionContext = NULL;
     PMINISPY_TRANSACTION_CONTEXT oldTransactionContext = NULL;
@@ -1027,7 +1025,7 @@ Return value
     //  transaction APIs are also present.
     //
 
-    if (NULL == MiniSpyData.PFltGetTransactionContext) {
+    if (NULL == UsbWlData.PFltGetTransactionContext) {
 
         return STATUS_SUCCESS;
     }
@@ -1037,7 +1035,7 @@ Return value
     //  one we have already enlisted in this transaction.
     //
 
-    status = (*MiniSpyData.PFltGetTransactionContext)( FltObjects->Instance,
+    status = (*UsbWlData.PFltGetTransactionContext)( FltObjects->Instance,
                                                        FltObjects->Transaction,
                                                        &transactionContext );
 
@@ -1081,7 +1079,7 @@ Return value
 
     status = FltAllocateContext( FltObjects->Filter,
                                  FLT_TRANSACTION_CONTEXT,
-                                 sizeof(MINISPY_TRANSACTION_CONTEXT),
+                                 sizeof(USBWL_TRANSACTION_CONTEXT),
                                  PagedPool,
                                  &transactionContext );
 
@@ -1094,12 +1092,12 @@ Return value
     //  Set the context into the transaction
     //
 
-    RtlZeroMemory(transactionContext, sizeof(MINISPY_TRANSACTION_CONTEXT));
+    RtlZeroMemory(transactionContext, sizeof(USBWL_TRANSACTION_CONTEXT));
     transactionContext->Count = Sequence++;
 
-    FLT_ASSERT( MiniSpyData.PFltSetTransactionContext );
+    FLT_ASSERT( UsbWlData.PFltSetTransactionContext );
 
-    status = (*MiniSpyData.PFltSetTransactionContext)( FltObjects->Instance,
+    status = (*UsbWlData.PFltSetTransactionContext)( FltObjects->Instance,
                                                        FltObjects->Transaction,
                                                        FLT_SET_CONTEXT_KEEP_IF_EXISTS,
                                                        transactionContext,
@@ -1151,9 +1149,9 @@ ENLIST_IN_TRANSACTION:
     //  Enlist on this transaction for notifications.
     //
 
-    FLT_ASSERT( MiniSpyData.PFltEnlistInTransaction );
+    FLT_ASSERT( UsbWlData.PFltEnlistInTransaction );
 
-    status = (*MiniSpyData.PFltEnlistInTransaction)( FltObjects->Instance,
+    status = (*UsbWlData.PFltEnlistInTransaction)( FltObjects->Instance,
                                                      FltObjects->Transaction,
                                                      transactionContext,
                                                      FLT_MAX_TRANSACTION_NOTIFICATIONS );
@@ -1220,16 +1218,16 @@ ENLIST_IN_TRANSACTION:
         SpyLog( recordList );
     }
 
-#endif // MINISPY_VISTA
+#endif // USBWL_VISTA
 
     return STATUS_SUCCESS;
 }
 
 
-#if MINISPY_VISTA
+#if USBWL_VISTA
 
 NTSTATUS
-SpyKtmNotificationCallback (
+WlKtmNotificationCallback (
     _In_ PCFLT_RELATED_OBJECTS FltObjects,
     _In_ PFLT_CONTEXT TransactionContext,
     _In_ ULONG TransactionNotification
@@ -1259,10 +1257,10 @@ SpyKtmNotificationCallback (
     return STATUS_SUCCESS;
 }
 
-#endif // MINISPY_VISTA
+#endif // USBWL_VISTA
 
 VOID
-SpyDeleteTxfContext (
+WlDeleteTxfContext (
     _Inout_ PMINISPY_TRANSACTION_CONTEXT Context,
     _In_ FLT_CONTEXT_TYPE ContextType
     )
