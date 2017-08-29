@@ -183,7 +183,7 @@
     <ClCompile Include="usbwl.c" />
     <ClCompile Include="mspyLib.c" />
     <ClCompile Include="RegistrationData.c" />
-    <ResourceCompile Include="minispy.rc" />
+    <ResourceCompile Include="usbwl.rc" />
   </ItemGroup>
   <ItemGroup>
     <Inf Exclude="@(Inf)" Include="*.inf" />
