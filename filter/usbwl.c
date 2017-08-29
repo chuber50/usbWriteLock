@@ -130,7 +130,7 @@ Return Value:
                                          NULL,
                                          POOL_NX_ALLOCATION,
                                          RECORD_SIZE,
-                                         SPY_TAG,
+                                         WL_TAG,
                                          0 );
 
 #if USBWL_VISTA
