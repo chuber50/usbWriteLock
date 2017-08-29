@@ -29,18 +29,18 @@ DriverEntry (
     );
 
 
-NTSTATUS
-SpyMessage (
-    _In_ PVOID ConnectionCookie,
-    _In_reads_bytes_opt_(InputBufferSize) PVOID InputBuffer,
-    _In_ ULONG InputBufferSize,
-    _Out_writes_bytes_to_opt_(OutputBufferSize,*ReturnOutputBufferLength) PVOID OutputBuffer,
-    _In_ ULONG OutputBufferSize,
-    _Out_ PULONG ReturnOutputBufferLength
-    );
+//NTSTATUS
+//SpyMessage (
+//    _In_ PVOID ConnectionCookie,
+//    _In_reads_bytes_opt_(InputBufferSize) PVOID InputBuffer,
+//    _In_ ULONG InputBufferSize,
+//    _Out_writes_bytes_to_opt_(OutputBufferSize,*ReturnOutputBufferLength) PVOID OutputBuffer,
+//    _In_ ULONG OutputBufferSize,
+//    _Out_ PULONG ReturnOutputBufferLength
+//    );
 
 NTSTATUS
-SpyConnect(
+WlCommunicationConnect(
     _In_ PFLT_PORT ClientPort,
     _In_ PVOID ServerPortCookie,
     _In_reads_bytes_(SizeOfContext) PVOID ConnectionContext,
@@ -49,7 +49,7 @@ SpyConnect(
     );
 
 VOID
-SpyDisconnect(
+WlCommunicationDisconnect(
     _In_opt_ PVOID ConnectionCookie
     );
 
@@ -66,9 +66,8 @@ SpyDisconnect(
     #pragma alloc_text(INIT, DriverEntry)
     #pragma alloc_text(PAGE, WlFilterUnload)
     #pragma alloc_text(PAGE, WlQueryTeardown)
-    #pragma alloc_text(PAGE, SpyConnect)
-    #pragma alloc_text(PAGE, SpyDisconnect)
-    #pragma alloc_text(PAGE, SpyMessage)
+    #pragma alloc_text(PAGE, WlCommunicationConnect)
+    #pragma alloc_text(PAGE, WlCommunicationDisconnect)
 #endif
 
 
@@ -184,8 +183,8 @@ Return Value:
                                              &UsbWlData.ServerPort,
                                              &oa,
                                              NULL,
-                                             SpyConnect,
-                                             SpyDisconnect,
+                                             WlCommunicationConnect,
+                                             WlCommunicationDisconnect,
                                              NULL,
                                              1 );
 
@@ -221,7 +220,7 @@ Return Value:
 }
 
 NTSTATUS
-SpyConnect(
+WlCommunicationConnect(
     _In_ PFLT_PORT ClientPort,
     _In_ PVOID ServerPortCookie,
     _In_reads_bytes_(SizeOfContext) PVOID ConnectionContext,
@@ -264,7 +263,7 @@ Return Value
 
 
 VOID
-SpyDisconnect(
+WlCommunicationDisconnect(
     _In_opt_ PVOID ConnectionCookie
    )
 /*++
@@ -409,14 +408,6 @@ Return Value:
 --*/
 {
     FLT_PREOP_CALLBACK_STATUS returnStatus = FLT_PREOP_SUCCESS_NO_CALLBACK; //assume we are NOT going to call our completion routine
-    //PRECORD_LIST recordList;
-    //PFLT_FILE_NAME_INFORMATION nameInfo = NULL;
-    //UNICODE_STRING defaultName;
-    //PUNICODE_STRING nameToUse;
-    //NTSTATUS status;
-    //PUNICODE_STRING ecpDataToUse = NULL;
-    //UNICODE_STRING ecpData;
-    //WCHAR ecpDataBuffer[MAX_NAME_SPACE/sizeof(WCHAR)];
 
 	if (Data && Data->Iopb && Data->Iopb->MajorFunction == IRP_MJ_CREATE)
 	{
@@ -428,7 +419,7 @@ Return Value:
 			PIO_SECURITY_CONTEXT SecurityContextPtr = ParameterPtr->Create.SecurityContext;
 
 			ACCESS_MASK desiredAccess = SecurityContextPtr->DesiredAccess;
-			BOOLEAN writeOperation = ((desiredAccess & (FILE_WRITE_DATA | FILE_WRITE_ATTRIBUTES | FILE_SUPERSEDE | GENERIC_WRITE | FILE_WRITE_EA | FILE_APPEND_DATA | DELETE | WRITE_DAC | WRITE_OWNER | FILE_ADD_FILE | FILE_ADD_SUBDIRECTORY)) ||
+			BOOLEAN writeOperation = ((desiredAccess & (FILE_WRITE_DATA | FILE_WRITE_ATTRIBUTES | FILE_WRITE_EA | FILE_APPEND_DATA | DELETE | WRITE_DAC | WRITE_OWNER | FILE_ADD_FILE | FILE_ADD_SUBDIRECTORY)) ||
 				(Data->Iopb->Parameters.Create.Options & FILE_DELETE_ON_CLOSE));
 
 			if (writeOperation) {
@@ -440,7 +431,7 @@ Return Value:
 			}
 
 			ULONG createDisposition = Data->Iopb->Parameters.Create.Options;
-			BOOLEAN isNewFile = (createDisposition & (FILE_SUPERSEDE | FILE_CREATE | FILE_OPEN_IF | FILE_OVERWRITE | FILE_OVERWRITE_IF | FILE_DIRECTORY_FILE | FILE_NON_DIRECTORY_FILE | FILE_ADD_FILE | FILE_ADD_SUBDIRECTORY));
+			BOOLEAN isNewFile = (createDisposition & (FILE_SUPERSEDE | FILE_CREATE | FILE_OVERWRITE | FILE_OVERWRITE_IF |  FILE_ADD_FILE | FILE_ADD_SUBDIRECTORY));
 
 			if (isNewFile) {
 				Data->IoStatus.Status = STATUS_ACCESS_DENIED; //STATUS_CANCELLED; 
