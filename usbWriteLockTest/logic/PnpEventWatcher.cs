@@ -10,48 +10,48 @@ namespace usbWriteLockTest.logic
     class PnpEventWatcher : IDisposable
     {
         // used for monitoring plugging and unplugging of USB devices.
-        private ManagementEventWatcher watcherAttach;
-        private ManagementEventWatcher watcherDetach;
-        private Action TriggerAction;
+        private ManagementEventWatcher _watcherAttach;
+        private ManagementEventWatcher _watcherDetach;
+        private Action _triggerAction;
 
         public PnpEventWatcher(Action triggerAction)
         {
-            TriggerAction = triggerAction;
+            _triggerAction = triggerAction;
             //Win32_VolumeChangeEvent
 
             // Add USB plugged event watching
-            watcherAttach = new ManagementEventWatcher();
-            watcherAttach.EventArrived += Attaching;
-            watcherAttach.Query = new WqlEventQuery("SELECT * FROM Win32_DeviceChangeEvent WHERE EventType = 2");
-            watcherAttach.Start();
+            _watcherAttach = new ManagementEventWatcher();
+            _watcherAttach.EventArrived += attaching;
+            _watcherAttach.Query = new WqlEventQuery("SELECT * FROM Win32_DeviceChangeEvent WHERE EventType = 2");
+            _watcherAttach.Start();
 
             // Add USB unplugged event watching
-            watcherDetach = new ManagementEventWatcher();
-            watcherDetach.EventArrived += Detaching;
-            watcherDetach.Query = new WqlEventQuery("SELECT * FROM Win32_DeviceChangeEvent WHERE EventType = 3");
-            watcherDetach.Start();
+            _watcherDetach = new ManagementEventWatcher();
+            _watcherDetach.EventArrived += detaching;
+            _watcherDetach.Query = new WqlEventQuery("SELECT * FROM Win32_DeviceChangeEvent WHERE EventType = 3");
+            _watcherDetach.Start();
         }
 
         public void Dispose()
         {
-            watcherAttach.Stop();
-            watcherDetach.Stop();
+            _watcherAttach.Stop();
+            _watcherDetach.Stop();
             //you may want to yield or Thread.Sleep
-            watcherAttach.Dispose();
-            watcherDetach.Dispose();
+            _watcherAttach.Dispose();
+            _watcherDetach.Dispose();
             //you may want to yield or Thread.Sleep
         }
 
-        void Attaching(object sender, EventArrivedEventArgs e)
+        void attaching(object sender, EventArrivedEventArgs e)
         {
-            if (sender != watcherAttach) return;
-            TriggerAction();
+            if (sender != _watcherAttach) return;
+            _triggerAction();
         }
 
-        void Detaching(object sender, EventArrivedEventArgs e)
+        void detaching(object sender, EventArrivedEventArgs e)
         {
-            if (sender != watcherDetach) return;
-            TriggerAction();
+            if (sender != _watcherDetach) return;
+            _triggerAction();
         }
 
         ~PnpEventWatcher()

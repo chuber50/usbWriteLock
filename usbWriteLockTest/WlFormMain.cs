@@ -24,7 +24,7 @@ namespace usbWriteLockTest
 
         private void WlFormMain_Load(object sender, EventArgs e)
         {
-            grdDevices.DataSource = _deviceCollector.volumes;
+            grdDevices.DataSource = _deviceCollector.drives;
             _watcher = new PnpEventWatcher(this.updateDeviceGrid);
         }
 
@@ -34,7 +34,7 @@ namespace usbWriteLockTest
             {
                 if (e.Value != null)
                 {
-                    ConvertByteColumn(e);
+                    convertByteColumn(e);
                 }
             }
         }
@@ -47,7 +47,7 @@ namespace usbWriteLockTest
 
         private void updateDeviceGrid()
         {
-            _deviceCollector.RepollDevices();
+            _deviceCollector.repollDevices();
             if (this.grdDevices.InvokeRequired)
             {
                 StringArgReturningVoidDelegate d = new StringArgReturningVoidDelegate(updateGrid);
@@ -61,7 +61,7 @@ namespace usbWriteLockTest
 
         delegate void StringArgReturningVoidDelegate();
 
-        private void ConvertByteColumn(DataGridViewCellFormattingEventArgs formatting)
+        private void convertByteColumn(DataGridViewCellFormattingEventArgs formatting)
         {
             if (formatting.Value != null)
             {
@@ -97,7 +97,14 @@ namespace usbWriteLockTest
 
         private void button1_Click(object sender, EventArgs e)
         {
-            DiskReader diskReader = new DiskReader(_deviceCollector.volumes[0].DriveName);
+            DiskReader diskReader = new DiskReader(_deviceCollector.drives[0].driveName);
+        }
+
+        private void grdDevices_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            grdVolumes.DataSource = _deviceCollector.drives[e.RowIndex].volumes;
+            grdVolumes.Update();
+            grdVolumes.Refresh();
         }
     }
 }

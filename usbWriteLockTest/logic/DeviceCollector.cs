@@ -4,90 +4,80 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Management;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Win32;
+
 using usbWriteLockTest.data;
 
 namespace usbWriteLockTest.logic
 {
     class DeviceCollector
     {
-
-
-        public List<UsbDevice> volumes = new List<UsbDevice>();
+        public List<UsbDrive> drives = new List<UsbDrive>();
 
         public DeviceCollector()
         {
-            RepollDevices();
+            repollDevices();
         }
         
 
-        public void RepollDevices()
+        public void repollDevices()
         {
-            volumes.Clear();
-            List<DriveInfo> drives = DriveInfo.GetDrives().ToList();
+            drives.Clear();
+            List<DriveInfo> driveInfos = DriveInfo.GetDrives().ToList();
 
             ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT * FROM Win32_DiskDrive WHERE InterfaceType='USB'");
 
-            foreach (ManagementObject queryObj in searcher.Get())
+            foreach (var o in searcher.Get())
             {
-                string driveName = (string)queryObj.GetPropertyValue("Name");
-                string model = (string) queryObj.GetPropertyValue("Model");
-                ulong driveSize = (ulong) queryObj.GetPropertyValue("Size");
-                foreach (PropertyData prop in queryObj.Properties)
+                var queryObj = (ManagementObject) o;
+                UsbDrive usbDrive = new UsbDrive(
+                    (string) queryObj.GetPropertyValue("Name"),
+                    (string) queryObj.GetPropertyValue("Model"),
+                    (ulong) queryObj.GetPropertyValue("Size"))
                 {
-                    Console.WriteLine("{0}: {1}", prop.Name, prop.Value);
-                }
-                foreach (ManagementObject b in queryObj.GetRelated("Win32_DiskPartition"))
+                    driveName = (string)queryObj.GetPropertyValue("Name"),
+                    model = (string)queryObj.GetPropertyValue("Model"),
+                    driveSize = (ulong)queryObj.GetPropertyValue("Size"),
+                    sectorsPerTrack = (uint)queryObj.GetPropertyValue("SectorsPerTrack"),
+                    totalCylinders = (ulong)queryObj.GetPropertyValue("TotalCylinders"),
+                    totalHeads = (uint)queryObj.GetPropertyValue("TotalHeads"),
+                    totalSectors = (ulong)queryObj.GetPropertyValue("TotalSectors"),
+                    totalTracks = (ulong)queryObj.GetPropertyValue("TotalTracks"),
+                    tracksPerCylinder = (uint)queryObj.GetPropertyValue("TracksPerCylinder"),
+                };
+
+                //foreach (PropertyData prop in queryObj.Properties)
+                //{
+                //    Console.WriteLine("{0}: {1}", prop.Name, prop.Value);
+                //}
+
+                foreach (var managementBaseObject in queryObj.GetRelated("Win32_DiskPartition"))
                 {
-                    foreach (PropertyData prop in b.Properties)
-                    {
-                        Console.WriteLine("{0}: {1}", prop.Name, prop.Value);
-                    }
+                    var b = (ManagementObject) managementBaseObject;
                     foreach (ManagementBaseObject c in b.GetRelated("Win32_LogicalDisk"))
                     {
-                        var driveInfo = (from n in drives
+                        var volumeInfo = (from n in driveInfos
                             where n.Name.Contains((string)c.GetPropertyValue("DeviceID"))
                             select n).FirstOrDefault();
-                        if (driveInfo != null)
+                        if (volumeInfo != null)
                         {
-                            UsbDevice device = new UsbDevice(
-                                driveName,
-                                driveSize,
-                                (string)c.GetPropertyValue("DeviceID"),
-                                driveInfo,
-                                GetDeviceName((string)c.GetPropertyValue("DeviceID"))
-                            );
-                            volumes.Add(device);
+                            LogicalVolume volume = new LogicalVolume((string)c.GetPropertyValue("DeviceID"))
+                            {
+                                rootDirectory = volumeInfo.RootDirectory,
+                                driveFormat =  volumeInfo.DriveFormat,
+                                driveType = volumeInfo.DriveType,
+                                isReady = volumeInfo.IsReady,
+                                totalFreeSpace = volumeInfo.TotalFreeSpace,
+                                totalSize = volumeInfo.TotalSize,
+                                volumeLabel = volumeInfo.VolumeLabel,
+                                name = volumeInfo.Name
+                            };
+
+                            usbDrive.volumes.Add(volume);
                         }
                     }
                 }
+                drives.Add(usbDrive);
             }
         }
-
-        private string GetDeviceName(string deviceID)
-        {
-            string[] Parts = deviceID.Split(@"\".ToCharArray());
-            if (Parts.Length >= 3)
-            {
-                string DevType = Parts[0];
-                string DeviceInstanceId = Parts[1];
-                string DeviceUniqueID = Parts[2];
-                string RegPath = @"SYSTEM\CurrentControlSet\Enum\" + DevType + "\\" + DeviceInstanceId + "\\" +
-                                 DeviceUniqueID;
-                RegistryKey key = Registry.LocalMachine.OpenSubKey(RegPath);
-                if (key != null)
-                {
-                    object result = key.GetValue("FriendlyName");
-                    if (result != null)
-                        return result.ToString();
-
-                }
-            }
-            return String.Empty;
-        }
-    }
-
-    
+    }  
 }

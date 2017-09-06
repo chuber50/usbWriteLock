@@ -10,8 +10,8 @@ namespace usbWriteLockTest.native
     public enum EFileDevice : uint
     {
         Beep = 0x00000001,
-        CDRom = 0x00000002,
-        CDRomFileSytem = 0x00000003,
+        CdRom = 0x00000002,
+        CdRomFileSytem = 0x00000003,
         Controller = 0x00000004,
         Datalink = 0x00000005,
         Dfs = 0x00000006,

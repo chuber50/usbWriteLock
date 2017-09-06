@@ -7,9 +7,9 @@ namespace usbWriteLockTest.native
 {
     class Prototypes
     {
-        public const uint INVALID_HANDLE_VALUE = 0xFFFFFFFF;
+        public const uint InvalidHandleValue = 0xFFFFFFFF;
 
-        public const uint INVALID_SET_FILE_POINTER = 0xFFFFFFFF;
+        public const uint InvalidSetFilePointer = 0xFFFFFFFF;
 
         // Use interop to call the CreateFile function.
         // For more information about CreateFile,
@@ -63,13 +63,13 @@ namespace usbWriteLockTest.native
         [DllImport("Kernel32.dll", SetLastError = false, CharSet = CharSet.Auto)]
         public static extern bool DeviceIoControl(
             SafeFileHandle hDevice,
-            EIOControlCode IoControlCode,
-            [MarshalAs(UnmanagedType.AsAny)] [In] object InBuffer,
+            EioControlCode ioControlCode,
+            [MarshalAs(UnmanagedType.AsAny)] [In] object inBuffer,
             uint nInBufferSize,
-            [MarshalAs(UnmanagedType.AsAny)] [Out] object OutBuffer,
+            [MarshalAs(UnmanagedType.AsAny)] [Out] object outBuffer,
             uint nOutBufferSize,
             ref uint pBytesReturned,
-            [In] IntPtr Overlapped
+            [In] IntPtr overlapped
         );
     }
 }

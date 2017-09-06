@@ -8,8 +8,8 @@ namespace usbWriteLockTest.native.constant
 {
     public enum EMoveMethod : uint
     {
-        FILE_BEGIN = 0,
-        FILE_CURRENT = 1,
-        FILE_END = 2
+        FileBegin = 0,
+        FileCurrent = 1,
+        FileEnd = 2
     }
 }

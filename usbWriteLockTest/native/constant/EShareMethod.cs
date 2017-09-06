@@ -9,10 +9,10 @@ namespace usbWriteLockTest.native.constant
     [Flags]
     public enum EShareMode : uint
     {
-        FILE_SHARE_NONE = 0x0,
-        FILE_SHARE_READ = 0x1,
-        FILE_SHARE_WRITE = 0x2,
-        FILE_SHARE_DELETE = 0x4,
+        FileShareNone = 0x0,
+        FileShareRead = 0x1,
+        FileShareWrite = 0x2,
+        FileShareDelete = 0x4,
 
     }
 }

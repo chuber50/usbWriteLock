@@ -10,7 +10,7 @@ namespace usbWriteLockTest.native
     ///     http://msdn.microsoft.com/en-us/library/windows/hardware/ff543023(v=vs.85).aspx
     /// </summary>
     [Flags]
-    public enum EIOControlCode : uint
+    public enum EioControlCode : uint
     {
         // STORAGE
         StorageCheckVerify = (EFileDevice.MassStorage << 16) | (0x0200 << 2) | EMethod.Buffered | (FileAccess.Read << 14),

@@ -48,11 +48,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="data\DiskReader.cs" />
-    <Compile Include="data\UsbDevice.cs" />
+    <Compile Include="data\LogicalVolume.cs" />
+    <Compile Include="logic\DiskReader.cs" />
+    <Compile Include="data\UsbDrive.cs" />
     <Compile Include="logic\DeviceCollector.cs" />
     <Compile Include="logic\PnpEventWatcher.cs" />
-    <Compile Include="logic\WinApiFile.cs" />
+    <Compile Include="native\WinApiVolume.cs" />
+    <Compile Include="native\WinApiFile.cs" />
+    <Compile Include="native\constant\ECreateDisposition.cs" />
+    <Compile Include="native\constant\EDesiredAccess.cs" />
+    <Compile Include="native\constant\EFileDevice.cs" />
+    <Compile Include="native\constant\EFlagsAndAttributes.cs" />
+    <Compile Include="native\constant\EIOControlCode.cs" />
+    <Compile Include="native\constant\EMethod.cs" />
+    <Compile Include="native\constant\EMoveMethod.cs" />
+    <Compile Include="native\constant\EShareMethod.cs" />
+    <Compile Include="native\Prototypes.cs" />
     <Compile Include="WlFormMain.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -7,7 +7,6 @@ using  usbWriteLockTest.data;
 using usbWriteLockTest.logic;
 
 using System.IO;
-using usbWriteLockTest.logic;
 
 namespace usbWriteLockTest.data
 {
@@ -24,13 +23,16 @@ namespace usbWriteLockTest.data
 
         public DiskReader(string diskName)
         {
+            WinApiVolume vol = new WinApiVolume(string.Format("\\\\.\\{0}:", "F"));
+            vol.Lock();
 
-            WinApiFile file = new WinApiFile(diskName,
-            WinApiFile.DesiredAccess.GENERIC_READ);
+            vol.unLock();
 
-            byte[] aBuffer = new byte[512];
-            uint cbRead = file.Read(aBuffer, 1000);
-            file.Close();
+            vol.close();
+
+            //byte[] aBuffer = new byte[512];
+            //uint cbRead = file.Read(aBuffer, 1000);
+            //file.Close();
         }
        
     }
