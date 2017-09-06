@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Microsoft.Win32.SafeHandles;
 using usbWriteLockTest.native.constant;
 
@@ -37,6 +38,14 @@ namespace usbWriteLockTest.native
             IntPtr pOverlapped);
 
         [DllImport("kernel32.dll", SetLastError = true)]
+        internal static extern unsafe bool ReadFile(
+            SafeFileHandle hFile,
+            byte* pBuffer,
+            uint NumberOfBytesToRead,
+            uint* pNumberOfBytesRead,
+            IntPtr Overlapped);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
         internal static extern bool WriteFile(
             SafeFileHandle hFile,
             Byte[] aBuffer,
@@ -45,11 +54,24 @@ namespace usbWriteLockTest.native
             IntPtr pOverlapped);
 
         [DllImport("kernel32.dll", SetLastError = true)]
+        internal static extern unsafe bool WriteFile(
+            SafeFileHandle hFile,
+            byte* pBuffer,
+            uint NumberOfBytesToWrite,
+            uint* pNumberOfBytesWritten,
+            IntPtr Overlapped);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
         internal static extern UInt32 SetFilePointer(
             SafeFileHandle hFile,
             Int32 cbDistanceToMove,
             IntPtr pDistanceToMoveHigh,
             EMoveMethod fMoveMethod);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        internal static extern bool SetFilePointerEx(
+            SafeFileHandle hFile, ulong liDistanceToMove,
+            out ulong lpNewFilePointer, uint dwMoveMethod);
 
         [DllImport("kernel32.dll", SetLastError = true)]
         internal static extern bool SetEndOfFile(

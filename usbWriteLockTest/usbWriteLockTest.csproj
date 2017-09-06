@@ -22,6 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -53,8 +54,8 @@
     <Compile Include="data\UsbDrive.cs" />
     <Compile Include="logic\DeviceCollector.cs" />
     <Compile Include="logic\PnpEventWatcher.cs" />
+    <Compile Include="native\DiskStream.cs" />
     <Compile Include="native\WinApiVolume.cs" />
-    <Compile Include="native\WinApiFile.cs" />
     <Compile Include="native\constant\ECreateDisposition.cs" />
     <Compile Include="native\constant\EDesiredAccess.cs" />
     <Compile Include="native\constant\EFileDevice.cs" />

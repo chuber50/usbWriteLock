@@ -61,6 +61,7 @@ namespace usbWriteLockTest
 
         delegate void StringArgReturningVoidDelegate();
 
+        //https://social.msdn.microsoft.com/Forums/windows/en-US/62f5b477-5311-4de5-bc18-fbd29bbfc9e2/setting-an-image-column-in-a-datagrid-view-based-on-a-value-in-the-database-c?forum=winformsdatacontrols
         private void convertByteColumn(DataGridViewCellFormattingEventArgs formatting)
         {
             if (formatting.Value != null)
@@ -97,7 +98,10 @@ namespace usbWriteLockTest
 
         private void button1_Click(object sender, EventArgs e)
         {
-            DiskReader diskReader = new DiskReader(_deviceCollector.drives[0].driveName);
+            DiskReader diskReader = new DiskReader(_deviceCollector.drives[grdDevices.CurrentCell.RowIndex]);
+            diskReader.LockVolumes();
+            diskReader.GenerateChecksum();
+            diskReader.UnlockVolumes();
         }
 
         private void grdDevices_CellClick(object sender, DataGridViewCellEventArgs e)

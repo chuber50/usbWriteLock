@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             this.grpDrives = new System.Windows.Forms.GroupBox();
-            this.button1 = new System.Windows.Forms.Button();
+            this.btnCheckSum = new System.Windows.Forms.Button();
             this.grpVolumes = new System.Windows.Forms.GroupBox();
             this.grdDevices = new System.Windows.Forms.DataGridView();
             this.grdVolumes = new System.Windows.Forms.DataGridView();
@@ -51,15 +51,15 @@
             this.grpDrives.TabStop = false;
             this.grpDrives.Text = "USB Devices";
             // 
-            // button1
+            // btnCheckSum
             // 
-            this.button1.Location = new System.Drawing.Point(263, 512);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 1;
-            this.button1.Text = "button1";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.btnCheckSum.Location = new System.Drawing.Point(38, 297);
+            this.btnCheckSum.Name = "btnCheckSum";
+            this.btnCheckSum.Size = new System.Drawing.Size(145, 23);
+            this.btnCheckSum.TabIndex = 1;
+            this.btnCheckSum.Text = "Calulate device checksum";
+            this.btnCheckSum.UseVisualStyleBackColor = true;
+            this.btnCheckSum.Click += new System.EventHandler(this.button1_Click);
             // 
             // grpVolumes
             // 
@@ -121,7 +121,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1040, 675);
             this.Controls.Add(this.grpVolumes);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.btnCheckSum);
             this.Controls.Add(this.grpDrives);
             this.Name = "WlFormMain";
             this.Text = "WlFormMain";
@@ -139,7 +139,7 @@
         private System.Windows.Forms.GroupBox grpDrives;
         //private System.Windows.Forms.DataGridViewTextBoxColumn pnpDeviceIDDataGridViewTextBoxColumn;
         //private System.Windows.Forms.DataGridViewTextBoxColumn driveInfoDataGridViewTextBoxColumn;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button btnCheckSum;
         private System.Windows.Forms.GroupBox grpVolumes;
         private System.Windows.Forms.DataGridView grdDevices;
         private System.Windows.Forms.DataGridView grdVolumes;

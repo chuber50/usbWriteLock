@@ -9,7 +9,7 @@ using usbWriteLockTest.native;
 using usbWriteLockTest.native.constant;
 using static usbWriteLockTest.native.Prototypes;
 
-namespace usbWriteLockTest.logic
+namespace usbWriteLockTest.native
 {
     public class WinApiVolume : IDisposable
     {
@@ -106,38 +106,31 @@ namespace usbWriteLockTest.logic
 
         //https://msdn.microsoft.com/en-us/library/windows/desktop/aa364562.aspx
         //http://www.pinvoke.net/default.aspx/kernel32.deviceiocontrol
-        public void Lock()
+        public bool Lock()
         {
             if (_sFileName.Length == 0)
                 throw new ArgumentNullException("FileName");
             uint unused = 0;
-            bool dismounted = DeviceIoControl(
-                _hFile, // handle to a volume
-                EioControlCode.FsctlLockVolume, // dwIoControlCode
-                IntPtr.Zero, // lpInBuffer
-                0, // nInBufferSize
-                IntPtr.Zero, // lpOutBuffer
-                0, // nOutBufferSize
-                ref unused,
-                IntPtr.Zero // OVERLAPPED structure
+            bool result = DeviceIoControl(
+                _hFile,
+                EioControlCode.FsctlLockVolume,
+                IntPtr.Zero, 0, IntPtr.Zero, 0, ref unused, IntPtr.Zero
             );
+
+            return result;
         }
 
-        public void unLock()
+        public bool Unlock()
         {
             if (_sFileName.Length == 0)
                 throw new ArgumentNullException("FileName");
             uint unused = 0;
-            bool dismounted = DeviceIoControl(
-                _hFile, // handle to a volume
-                EioControlCode.FsctlUnlockVolume, // dwIoControlCode
-                IntPtr.Zero, // lpInBuffer
-                0, // nInBufferSize
-                IntPtr.Zero, // lpOutBuffer
-                0, // nOutBufferSize
-                ref unused,
-                IntPtr.Zero // OVERLAPPED structure
+            bool result= DeviceIoControl(
+                _hFile, 
+                EioControlCode.FsctlUnlockVolume,
+                IntPtr.Zero, 0, IntPtr.Zero, 0, ref unused, IntPtr.Zero
             );
+            return result;
         }
 
         /* ---------------------------------------------------------

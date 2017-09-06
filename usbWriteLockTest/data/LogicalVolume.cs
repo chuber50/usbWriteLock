@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using usbWriteLockTest.native;
 
 namespace usbWriteLockTest.data
 {
     class LogicalVolume
     {
+        WinApiVolume nativeVolume;
+
         public LogicalVolume(string deviceId)
         {
             this.deviceId = deviceId;
+            nativeVolume = new WinApiVolume(string.Format("\\\\.\\{0}", deviceId));
         }
 
         [DisplayName("Drive Letter")]
@@ -49,5 +50,21 @@ namespace usbWriteLockTest.data
 
         [DisplayName("Mounted")]
         public bool mounted { get; set; } = true;
+
+        public void Lock()
+        {
+            if (!locked)
+            {
+                locked = nativeVolume.Lock();
+            }
+        }
+
+        public void Unlock()
+        {
+            if (locked)
+            {
+                locked = nativeVolume.Unlock();
+            }
+        }
     }
 }

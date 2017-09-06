@@ -25,6 +25,9 @@ namespace usbWriteLockTest.data
         [DisplayName("Total Size")]
         public ulong driveSize { get; set; }
 
+        [DisplayName("Bytes/Sector")]
+        public uint bytesPerSector { get; set; }
+
         [DisplayName("Sectors/Track")]
         public uint sectorsPerTrack { get; set; }
 

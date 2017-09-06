@@ -43,6 +43,7 @@ namespace usbWriteLockTest.logic
                     totalSectors = (ulong)queryObj.GetPropertyValue("TotalSectors"),
                     totalTracks = (ulong)queryObj.GetPropertyValue("TotalTracks"),
                     tracksPerCylinder = (uint)queryObj.GetPropertyValue("TracksPerCylinder"),
+                    bytesPerSector = (uint)queryObj.GetPropertyValue("BytesPerSector"),
                 };
 
                 //foreach (PropertyData prop in queryObj.Properties)
