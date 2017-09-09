@@ -66,5 +66,13 @@ namespace usbWriteLockTest.data
                 locked = nativeVolume.Unlock();
             }
         }
+
+        public void Dismount()
+        {
+            if (mounted)
+            {
+                mounted = nativeVolume.Dismount();
+            }
+        }
     }
 }

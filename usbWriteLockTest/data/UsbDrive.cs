@@ -25,25 +25,28 @@ namespace usbWriteLockTest.data
         [DisplayName("Total Size")]
         public ulong driveSize { get; set; }
 
-        [DisplayName("Bytes/Sector")]
+        [Browsable(false)]
         public uint bytesPerSector { get; set; }
 
-        [DisplayName("Sectors/Track")]
+        [Browsable(false)]
         public uint sectorsPerTrack { get; set; }
 
-        [DisplayName("Total Cylinders")]
+        [Browsable(false)]
         public ulong totalCylinders { get; set; }
 
-        [DisplayName("Total Heads")]
+        [Browsable(false)]
         public uint totalHeads { get; set; }
 
-        [DisplayName("Total Sectors")]
+        [Browsable(false)]
         public ulong totalSectors { get; set; }
 
-        [DisplayName("Total Tracks")]
+        [Browsable(false)]
         public ulong totalTracks { get; set; }
 
-        [DisplayName("Tracks/Cylinder")]
+        [Browsable(false)]
         public uint tracksPerCylinder { get; set; }
+
+        [Browsable(false)]
+        public string computedHash { get; set; }
     }
 }

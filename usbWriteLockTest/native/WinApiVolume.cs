@@ -133,6 +133,20 @@ namespace usbWriteLockTest.native
             return result;
         }
 
+        public bool Dismount()
+        {
+            if (_sFileName.Length == 0)
+                throw new ArgumentNullException("FileName");
+            uint unused = 0;
+            bool result = DeviceIoControl(
+                _hFile,
+                EioControlCode.FsctlDismountVolume,
+                IntPtr.Zero, 0, IntPtr.Zero, 0, ref unused, IntPtr.Zero
+            );
+
+            return result;
+        }
+
         /* ---------------------------------------------------------
          * Move file pointer
          * ------------------------------------------------------ */

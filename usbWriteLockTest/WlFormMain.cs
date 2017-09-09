@@ -15,7 +15,7 @@ namespace usbWriteLockTest
     public partial class WlFormMain : Form
     {
         private PnpEventWatcher _watcher;
-        private DeviceCollector _deviceCollector = new DeviceCollector();
+        private readonly DeviceCollector _deviceCollector = new DeviceCollector();
 
         public WlFormMain()
         {
@@ -50,7 +50,7 @@ namespace usbWriteLockTest
             _deviceCollector.repollDevices();
             if (this.grdDevices.InvokeRequired)
             {
-                StringArgReturningVoidDelegate d = new StringArgReturningVoidDelegate(updateGrid);
+                StringArgReturningVoidDelegate d = updateGrid;
                 this.Invoke(d, new Object[] { });
             }
             else
@@ -74,16 +74,16 @@ namespace usbWriteLockTest
 
                     //GB
                     if (bytes >= 1073741824.0)
-                        size = String.Format("{0:##.##}", bytes / 1073741824.0) + " GB";
+                        size = $"{bytes / 1073741824.0:##.##}" + " GB";
                     //MB
                     else if (bytes >= 1048576.0)
-                        size = String.Format("{0:##.##}", bytes / 1048576.0) + " MB";
+                        size = $"{bytes / 1048576.0:##.##}" + " MB";
                     //KB
                     else if (bytes >= 1024.0)
-                        size = String.Format("{0:##.##}", bytes / 1024.0) + " KB";
+                        size = $"{bytes / 1024.0:##.##}" + " KB";
                     //Bytes
                     else if (bytes > 0 && bytes < 1024.0)
-                        size = bytes.ToString() + " Bytes";
+                        size = bytes + " Bytes";
 
                     formatting.Value = size;
                     formatting.FormattingApplied = true;
@@ -96,7 +96,7 @@ namespace usbWriteLockTest
 
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void btnCheckSum1_Click(object sender, EventArgs e)
         {
             DiskReader diskReader = new DiskReader(_deviceCollector.drives[grdDevices.CurrentCell.RowIndex]);
             diskReader.LockVolumes();
@@ -106,9 +106,21 @@ namespace usbWriteLockTest
 
         private void grdDevices_CellClick(object sender, DataGridViewCellEventArgs e)
         {
+            txtDriveName.Text = _deviceCollector.drives[e.RowIndex].driveName;
+            txtModel.Text = _deviceCollector.drives[e.RowIndex].model;
+            txtTotalSize.Text = _deviceCollector.drives[e.RowIndex].driveSize.ToString();
+            txtSectorsTrack.Text = _deviceCollector.drives[e.RowIndex].sectorsPerTrack.ToString();
+            txtTracksCyl.Text = _deviceCollector.drives[e.RowIndex].tracksPerCylinder.ToString();
+            txtBytesSector.Text = _deviceCollector.drives[e.RowIndex].bytesPerSector.ToString();
+            txtTotalCyl.Text = _deviceCollector.drives[e.RowIndex].totalCylinders.ToString();
+            txtTotalHeads.Text = _deviceCollector.drives[e.RowIndex].totalHeads.ToString();
+            txtTotalTracks.Text = _deviceCollector.drives[e.RowIndex].totalTracks.ToString();
+            txtTotalSectors.Text = _deviceCollector.drives[e.RowIndex].totalSectors.ToString();
+    
             grdVolumes.DataSource = _deviceCollector.drives[e.RowIndex].volumes;
             grdVolumes.Update();
             grdVolumes.Refresh();
         }
+
     }
 }
