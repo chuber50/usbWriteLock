@@ -96,12 +96,20 @@ namespace usbWriteLockTest
 
         }
 
+        //http://www.infinitec.de/post/2007/06/09/Displaying-progress-updates-when-hashing-large-files.aspx
         private void btnCheckSum1_Click(object sender, EventArgs e)
         {
-            DiskReader diskReader = new DiskReader(_deviceCollector.drives[grdDevices.CurrentCell.RowIndex]);
-            diskReader.LockVolumes();
-            diskReader.GenerateChecksum();
-            diskReader.UnlockVolumes();
+            DeviceHandler deviceHandler = new DeviceHandler(_deviceCollector.drives[grdDevices.CurrentCell.RowIndex]);
+            deviceHandler.LockVolumes();
+
+            //ProgressPercentage.Visible = true;
+            //ProgressBar.Visible = true;
+            //StatusText.Text = "Computing hash...";
+
+            BackgroundWorker.RunWorkerAsync(_deviceCollector.drives[grdDevices.CurrentCell.RowIndex);
+
+            deviceHandler.GenerateChecksum();
+            deviceHandler.UnlockVolumes();
         }
 
         private void grdDevices_CellClick(object sender, DataGridViewCellEventArgs e)

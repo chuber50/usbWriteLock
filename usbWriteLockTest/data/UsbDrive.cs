@@ -5,7 +5,7 @@ using System.IO;
 
 namespace usbWriteLockTest.data
 {
-    class UsbDrive
+    public class UsbDrive
     {
         public List<LogicalVolume> volumes = new List<LogicalVolume>();
 

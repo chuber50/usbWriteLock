@@ -53,7 +53,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="data\LogicalVolume.cs" />
-    <Compile Include="logic\DiskReader.cs" />
+    <Compile Include="logic\AsyncHashCalculator.cs" />
+    <Compile Include="logic\DeviceHandler.cs" />
     <Compile Include="data\UsbDrive.cs" />
     <Compile Include="logic\DeviceCollector.cs" />
     <Compile Include="logic\PnpEventWatcher.cs" />
@@ -104,7 +105,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
