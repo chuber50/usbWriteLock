@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace usbWriteLockTest.native.constant
+﻿namespace usbWriteLockTest.native.constant
 {
     public enum EMoveMethod : uint
     {

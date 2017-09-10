@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Diagnostics.Eventing.Reader;
 using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 using usbWriteLockTest.data;
 using usbWriteLockTest.native;
 
@@ -17,10 +12,9 @@ namespace usbWriteLockTest.logic
     {
         private readonly int _bufferSize = 4096;
         private readonly UsbDrive _usbDrive;
-        private HashAlgorithm _hashAlgorithm;
-        protected byte[] hash;
+        private readonly HashAlgorithm _hashAlgorithm;
 
-        private BackgroundWorker _backgroundWorker;
+        private readonly BackgroundWorker _backgroundWorker;
         public event ProgressChangedEventHandler progressChanged;
 
         public AsyncHashCalculator(BackgroundWorker backgroundWorker, UsbDrive usbDrive)
@@ -36,7 +30,7 @@ namespace usbWriteLockTest.logic
             progressChanged?.Invoke(this, e);
         }
 
-        public byte[] ComputeHash()
+        public string ComputeHash()
         {
             Debug.Assert(_usbDrive.volumes.TrueForAll(v => v.locked));
 
@@ -70,11 +64,12 @@ namespace usbWriteLockTest.logic
                 } while (readAheadBytesRead != 0 && !_backgroundWorker.CancellationPending);
 
                 if (_backgroundWorker.CancellationPending)
-                    return hash = null;
+                    return null;
 
-                return hash = _hashAlgorithm.Hash;
+                _usbDrive.AddHash(BitConverter.ToString(_hashAlgorithm.Hash).Replace("-", string.Empty));
+                
+                return BitConverter.ToString(_hashAlgorithm.Hash).Replace("-", string.Empty);
 
-                //TODO make cancellable
                 //http://www.alexandre-gomes.com/?p=144
                 //http://www.infinitec.de/post/2007/06/09/Displaying-progress-updates-when-hashing-large-files.aspx
             }

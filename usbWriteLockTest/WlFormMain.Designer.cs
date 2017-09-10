@@ -34,10 +34,7 @@
             this.grpVolumes = new System.Windows.Forms.GroupBox();
             this.grdVolumes = new System.Windows.Forms.DataGridView();
             this.grpBoxInfo = new System.Windows.Forms.GroupBox();
-            this.grpHash2 = new System.Windows.Forms.GroupBox();
-            this.txtComputedHash2 = new System.Windows.Forms.TextBox();
             this.grpBoxHash1 = new System.Windows.Forms.GroupBox();
-            this.txtComputedHash = new System.Windows.Forms.TextBox();
             this.label9 = new System.Windows.Forms.Label();
             this.lblTotalTracks = new System.Windows.Forms.Label();
             this.txtTotalTracks = new System.Windows.Forms.TextBox();
@@ -61,18 +58,19 @@
             this.txtDriveName = new System.Windows.Forms.TextBox();
             this.progressBar = new System.Windows.Forms.ProgressBar();
             this.grpOperations = new System.Windows.Forms.GroupBox();
-            this.lstBoxLog = new System.Windows.Forms.ListBox();
-            this.btnRunTests = new System.Windows.Forms.Button();
-            this.btnResetResults = new System.Windows.Forms.Button();
             this.btnCancelOp = new System.Windows.Forms.Button();
+            this.btnResetResults = new System.Windows.Forms.Button();
+            this.btnRunTests = new System.Windows.Forms.Button();
+            this.lstBoxLog = new System.Windows.Forms.ListBox();
+            this.grdHashes = new System.Windows.Forms.DataGridView();
             this.grpDrives.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.grdDevices)).BeginInit();
             this.grpVolumes.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.grdVolumes)).BeginInit();
             this.grpBoxInfo.SuspendLayout();
-            this.grpHash2.SuspendLayout();
             this.grpBoxHash1.SuspendLayout();
             this.grpOperations.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.grdHashes)).BeginInit();
             this.SuspendLayout();
             // 
             // grpDrives
@@ -122,9 +120,9 @@
             this.grpVolumes.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.grpVolumes.Controls.Add(this.grdVolumes);
-            this.grpVolumes.Location = new System.Drawing.Point(6, 400);
+            this.grpVolumes.Location = new System.Drawing.Point(7, 292);
             this.grpVolumes.Name = "grpVolumes";
-            this.grpVolumes.Size = new System.Drawing.Size(504, 148);
+            this.grpVolumes.Size = new System.Drawing.Size(504, 132);
             this.grpVolumes.TabIndex = 2;
             this.grpVolumes.TabStop = false;
             this.grpVolumes.Text = "Volumes";
@@ -146,12 +144,11 @@
             this.grdVolumes.RowHeadersVisible = false;
             this.grdVolumes.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.grdVolumes.ShowEditingIcon = false;
-            this.grdVolumes.Size = new System.Drawing.Size(498, 129);
+            this.grdVolumes.Size = new System.Drawing.Size(498, 113);
             this.grdVolumes.TabIndex = 1;
             // 
             // grpBoxInfo
             // 
-            this.grpBoxInfo.Controls.Add(this.grpHash2);
             this.grpBoxInfo.Controls.Add(this.grpBoxHash1);
             this.grpBoxInfo.Controls.Add(this.label9);
             this.grpBoxInfo.Controls.Add(this.lblTotalTracks);
@@ -182,43 +179,15 @@
             this.grpBoxInfo.TabStop = false;
             this.grpBoxInfo.Text = "Device Information";
             // 
-            // grpHash2
-            // 
-            this.grpHash2.Controls.Add(this.txtComputedHash2);
-            this.grpHash2.Location = new System.Drawing.Point(6, 351);
-            this.grpHash2.Name = "grpHash2";
-            this.grpHash2.Size = new System.Drawing.Size(504, 43);
-            this.grpHash2.TabIndex = 26;
-            this.grpHash2.TabStop = false;
-            this.grpHash2.Text = "Computed Hash 2";
-            // 
-            // txtComputedHash2
-            // 
-            this.txtComputedHash2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtComputedHash2.Location = new System.Drawing.Point(3, 16);
-            this.txtComputedHash2.Name = "txtComputedHash2";
-            this.txtComputedHash2.ReadOnly = true;
-            this.txtComputedHash2.Size = new System.Drawing.Size(498, 20);
-            this.txtComputedHash2.TabIndex = 24;
-            // 
             // grpBoxHash1
             // 
-            this.grpBoxHash1.Controls.Add(this.txtComputedHash);
-            this.grpBoxHash1.Location = new System.Drawing.Point(6, 302);
+            this.grpBoxHash1.Controls.Add(this.grdHashes);
+            this.grpBoxHash1.Location = new System.Drawing.Point(7, 430);
             this.grpBoxHash1.Name = "grpBoxHash1";
-            this.grpBoxHash1.Size = new System.Drawing.Size(504, 43);
+            this.grpBoxHash1.Size = new System.Drawing.Size(504, 127);
             this.grpBoxHash1.TabIndex = 25;
             this.grpBoxHash1.TabStop = false;
-            this.grpBoxHash1.Text = "First Computed Hash";
-            // 
-            // txtComputedHash
-            // 
-            this.txtComputedHash.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtComputedHash.Location = new System.Drawing.Point(3, 16);
-            this.txtComputedHash.Name = "txtComputedHash";
-            this.txtComputedHash.ReadOnly = true;
-            this.txtComputedHash.Size = new System.Drawing.Size(498, 20);
-            this.txtComputedHash.TabIndex = 24;
+            this.grpBoxHash1.Text = "Computed Hashes";
             // 
             // label9
             // 
@@ -421,22 +390,15 @@
             this.grpOperations.TabStop = false;
             this.grpOperations.Text = "Testing";
             // 
-            // lstBoxLog
+            // btnCancelOp
             // 
-            this.lstBoxLog.FormattingEnabled = true;
-            this.lstBoxLog.Location = new System.Drawing.Point(7, 48);
-            this.lstBoxLog.Name = "lstBoxLog";
-            this.lstBoxLog.Size = new System.Drawing.Size(481, 186);
-            this.lstBoxLog.TabIndex = 5;
-            // 
-            // btnRunTests
-            // 
-            this.btnRunTests.Location = new System.Drawing.Point(7, 296);
-            this.btnRunTests.Name = "btnRunTests";
-            this.btnRunTests.Size = new System.Drawing.Size(141, 23);
-            this.btnRunTests.TabIndex = 6;
-            this.btnRunTests.Text = "&Run tests";
-            this.btnRunTests.UseVisualStyleBackColor = true;
+            this.btnCancelOp.Enabled = false;
+            this.btnCancelOp.Location = new System.Drawing.Point(7, 325);
+            this.btnCancelOp.Name = "btnCancelOp";
+            this.btnCancelOp.Size = new System.Drawing.Size(141, 23);
+            this.btnCancelOp.TabIndex = 8;
+            this.btnCancelOp.Text = "&Cancel operation";
+            this.btnCancelOp.UseVisualStyleBackColor = true;
             // 
             // btnResetResults
             // 
@@ -447,15 +409,42 @@
             this.btnResetResults.Text = "&Reset results";
             this.btnResetResults.UseVisualStyleBackColor = true;
             // 
-            // btnCancelOp
+            // btnRunTests
             // 
-            this.btnCancelOp.Enabled = false;
-            this.btnCancelOp.Location = new System.Drawing.Point(7, 325);
-            this.btnCancelOp.Name = "btnCancelOp";
-            this.btnCancelOp.Size = new System.Drawing.Size(141, 23);
-            this.btnCancelOp.TabIndex = 8;
-            this.btnCancelOp.Text = "&Cancel operation";
-            this.btnCancelOp.UseVisualStyleBackColor = true;
+            this.btnRunTests.Location = new System.Drawing.Point(7, 296);
+            this.btnRunTests.Name = "btnRunTests";
+            this.btnRunTests.Size = new System.Drawing.Size(141, 23);
+            this.btnRunTests.TabIndex = 6;
+            this.btnRunTests.Text = "&Run tests";
+            this.btnRunTests.UseVisualStyleBackColor = true;
+            // 
+            // lstBoxLog
+            // 
+            this.lstBoxLog.FormattingEnabled = true;
+            this.lstBoxLog.Location = new System.Drawing.Point(7, 48);
+            this.lstBoxLog.Name = "lstBoxLog";
+            this.lstBoxLog.Size = new System.Drawing.Size(481, 186);
+            this.lstBoxLog.TabIndex = 5;
+            // 
+            // grdHashes
+            // 
+            this.grdHashes.AllowUserToAddRows = false;
+            this.grdHashes.AllowUserToDeleteRows = false;
+            this.grdHashes.AllowUserToResizeRows = false;
+            this.grdHashes.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.grdHashes.BackgroundColor = System.Drawing.SystemColors.Window;
+            this.grdHashes.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.grdHashes.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.grdHashes.Location = new System.Drawing.Point(3, 16);
+            this.grdHashes.MultiSelect = false;
+            this.grdHashes.Name = "grdHashes";
+            this.grdHashes.ReadOnly = true;
+            this.grdHashes.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
+            this.grdHashes.RowHeadersVisible = false;
+            this.grdHashes.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.grdHashes.ShowEditingIcon = false;
+            this.grdHashes.Size = new System.Drawing.Size(498, 108);
+            this.grdHashes.TabIndex = 2;
             // 
             // WlFormMain
             // 
@@ -474,11 +463,9 @@
             ((System.ComponentModel.ISupportInitialize)(this.grdVolumes)).EndInit();
             this.grpBoxInfo.ResumeLayout(false);
             this.grpBoxInfo.PerformLayout();
-            this.grpHash2.ResumeLayout(false);
-            this.grpHash2.PerformLayout();
             this.grpBoxHash1.ResumeLayout(false);
-            this.grpBoxHash1.PerformLayout();
             this.grpOperations.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.grdHashes)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -494,7 +481,6 @@
         private System.Windows.Forms.DataGridView grdVolumes;
         private System.Windows.Forms.GroupBox grpBoxInfo;
         private System.Windows.Forms.TextBox txtDriveName;
-        private System.Windows.Forms.TextBox txtComputedHash;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Label lblTotalTracks;
         private System.Windows.Forms.TextBox txtTotalTracks;
@@ -516,14 +502,13 @@
         private System.Windows.Forms.TextBox txtModel;
         private System.Windows.Forms.Label lblDriveName;
         private System.Windows.Forms.GroupBox grpBoxHash1;
-        private System.Windows.Forms.GroupBox grpHash2;
-        private System.Windows.Forms.TextBox txtComputedHash2;
         private System.Windows.Forms.ProgressBar progressBar;
         private System.Windows.Forms.GroupBox grpOperations;
         private System.Windows.Forms.Button btnResetResults;
         private System.Windows.Forms.Button btnRunTests;
         private System.Windows.Forms.ListBox lstBoxLog;
         private System.Windows.Forms.Button btnCancelOp;
+        private System.Windows.Forms.DataGridView grdHashes;
     }
 }
 

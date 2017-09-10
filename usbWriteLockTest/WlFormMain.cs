@@ -1,13 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using usbWriteLockTest.data;
 using usbWriteLockTest.logic;
 
 namespace usbWriteLockTest
@@ -121,8 +114,6 @@ namespace usbWriteLockTest
             {
                 _hashWorker.RunWorkerAsync();
             }
-
-            deviceHandler.GenerateChecksum();
             deviceHandler.UnlockVolumes();
         }
 
@@ -139,8 +130,7 @@ namespace usbWriteLockTest
             e.Result = hashCalculator.ComputeHash();
         }
 
-        private void hashWorker_RunWorkerCompleted(
-            object sender, RunWorkerCompletedEventArgs e)
+        private void hashWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             // First, handle the case where an exception was thrown.
             if (e.Error != null)
@@ -161,7 +151,9 @@ namespace usbWriteLockTest
             {
                 // Finally, handle the case where the operation 
                 // succeeded.
-                txtComputedHash.Text = e.Result.ToString();
+                grdHashes.DataSource = _deviceCollector.drives[grdDevices.CurrentCell.RowIndex].hashes;
+                grdVolumes.Update();
+                grdVolumes.Refresh();
             }
 
             // Enable the Start button.

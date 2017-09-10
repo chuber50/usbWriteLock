@@ -1,19 +1,23 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.IO;
 
 namespace usbWriteLockTest.data
 {
     public class UsbDrive
     {
         public List<LogicalVolume> volumes = new List<LogicalVolume>();
+        public List<Hash> hashes = new List<Hash>();
 
         public UsbDrive(string driveName, string model, ulong driveSize)
         {
             this.driveSize = driveSize;
             this.driveName = driveName;
             this.model = model;
+        }
+
+        public void AddHash(string hashCode)
+        {
+            hashes.Add(new Hash(hashes.Count + 1, hashCode));
         }
 
         [DisplayName("Drive Name")]
@@ -46,7 +50,5 @@ namespace usbWriteLockTest.data
         [Browsable(false)]
         public uint tracksPerCylinder { get; set; }
 
-        [Browsable(false)]
-        public string computedHash { get; set; }
     }
 }
