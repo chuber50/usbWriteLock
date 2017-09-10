@@ -16,6 +16,7 @@ namespace usbWriteLockTest
     {
         private PnpEventWatcher _watcher;
         private readonly DeviceCollector _deviceCollector = new DeviceCollector();
+        private BackgroundWorker _hashWorker;
 
         public WlFormMain()
         {
@@ -26,6 +27,16 @@ namespace usbWriteLockTest
         {
             grdDevices.DataSource = _deviceCollector.drives;
             _watcher = new PnpEventWatcher(this.updateDeviceGrid);
+            _hashWorker = new BackgroundWorker();
+            _hashWorker.WorkerReportsProgress = true;
+            _hashWorker.WorkerSupportsCancellation = true;
+
+            _hashWorker.DoWork +=
+                hashWorker_DoWork;
+            _hashWorker.RunWorkerCompleted +=
+                hashWorker_RunWorkerCompleted;
+            _hashWorker.ProgressChanged +=
+                hashWorker_ProgressChanged;
         }
 
         private void grdDevices_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
@@ -106,10 +117,64 @@ namespace usbWriteLockTest
             //ProgressBar.Visible = true;
             //StatusText.Text = "Computing hash...";
 
-            BackgroundWorker.RunWorkerAsync(_deviceCollector.drives[grdDevices.CurrentCell.RowIndex);
+            if (!_hashWorker.IsBusy)
+            {
+                _hashWorker.RunWorkerAsync();
+            }
 
             deviceHandler.GenerateChecksum();
             deviceHandler.UnlockVolumes();
+        }
+
+        private void hashWorker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            // Get the BackgroundWorker that raised this event.
+            BackgroundWorker worker = sender as BackgroundWorker;
+
+            // Assign the result of the computation
+            // to the Result property of the DoWorkEventArgs
+            // object. This is will be available to the 
+            // RunWorkerCompleted eventhandler.
+            AsyncHashCalculator hashCalculator = new AsyncHashCalculator(worker, _deviceCollector.drives[grdDevices.CurrentCell.RowIndex]);
+            e.Result = hashCalculator.ComputeHash();
+        }
+
+        private void hashWorker_RunWorkerCompleted(
+            object sender, RunWorkerCompletedEventArgs e)
+        {
+            // First, handle the case where an exception was thrown.
+            if (e.Error != null)
+            {
+                MessageBox.Show(e.Error.Message);
+            }
+            else if (e.Cancelled)
+            {
+                // Next, handle the case where the user canceled 
+                // the operation.
+                // Note that due to a race condition in 
+                // the DoWork event handler, the Cancelled
+                // flag may not have been set, even though
+                // CancelAsync was called.
+                lstBoxLog.Items.Add("Canceled");
+            }
+            else
+            {
+                // Finally, handle the case where the operation 
+                // succeeded.
+                txtComputedHash.Text = e.Result.ToString();
+            }
+
+            // Enable the Start button.
+            btnCheckSum1.Enabled = true;
+
+            // Disable the Cancel button.
+            btnCancelOp.Enabled = false;
+        }
+
+        // This event handler updates the progress bar.
+        private void hashWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            this.progressBar.Value = e.ProgressPercentage;
         }
 
         private void grdDevices_CellClick(object sender, DataGridViewCellEventArgs e)

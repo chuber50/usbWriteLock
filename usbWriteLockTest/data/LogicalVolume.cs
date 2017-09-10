@@ -5,7 +5,7 @@ using usbWriteLockTest.native;
 
 namespace usbWriteLockTest.data
 {
-    class LogicalVolume
+    public class LogicalVolume
     {
         WinApiVolume nativeVolume;
 

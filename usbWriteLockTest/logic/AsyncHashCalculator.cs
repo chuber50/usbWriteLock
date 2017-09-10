@@ -23,41 +23,61 @@ namespace usbWriteLockTest.logic
         private BackgroundWorker _backgroundWorker;
         public event ProgressChangedEventHandler progressChanged;
 
-        public AsyncHashCalculator(UsbDrive usbDrive)
+        public AsyncHashCalculator(BackgroundWorker backgroundWorker, UsbDrive usbDrive)
         {
             _usbDrive = usbDrive;
             _hashAlgorithm = new SHA256Managed();
+            _backgroundWorker = backgroundWorker;
             _backgroundWorker.ProgressChanged += handleProgressChanged;
         }
 
         private void handleProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            if (progressChanged != null)
-                progressChanged.Invoke(this, e);
+            progressChanged?.Invoke(this, e);
         }
 
         public byte[] ComputeHash()
         {
             Debug.Assert(_usbDrive.volumes.TrueForAll(v => v.locked));
 
-            byte[] buffer, readAheadBuffer;
-            long size, totalBytesRead;
-            int readAheadBytesRead, bytesRead;
+            long totalBytesRead = 0;
 
-            using (DiskStream stream = new DiskStream(_usbDrive.driveName, FileAccess.Read, _usbDrive.bytesPerSector, _usbDrive.driveSize))
+            using (DiskStream stream = new DiskStream(_usbDrive.driveName, FileAccess.Read, _usbDrive.bytesPerSector,
+                _usbDrive.driveSize))
             {
-                size = stream.Length;
-                buffer = new byte[_bufferSize];
+                var size = stream.Length;
 
-                readAheadBuffer = new byte[_bufferSize];
-                readAheadBytesRead = stream.Read(readAheadBuffer, 0, readAheadBuffer.Length);
+                var readAheadBuffer = new byte[_bufferSize];
+                var readAheadBytesRead = stream.Read(readAheadBuffer, 0, readAheadBuffer.Length);
 
                 totalBytesRead += readAheadBytesRead;
 
-                //TODO make cancellable
-                http://www.alexandre-gomes.com/?p=144
-                http://www.infinitec.de/post/2007/06/09/Displaying-progress-updates-when-hashing-large-files.aspx
-            }
+                do
+                {
+                    var bytesRead = readAheadBytesRead;
+                    var buffer = readAheadBuffer;
 
+                    readAheadBuffer = new byte[_bufferSize];
+                    readAheadBytesRead = stream.Read(readAheadBuffer, 0, readAheadBuffer.Length);
+                    totalBytesRead += readAheadBytesRead;
+
+                    if (readAheadBytesRead == 0)
+                        _hashAlgorithm.TransformFinalBlock(buffer, 0, bytesRead);
+                    else
+                        _hashAlgorithm.TransformBlock(buffer, 0, bytesRead, buffer, 0);
+
+                    _backgroundWorker.ReportProgress((int) ((double) totalBytesRead * 100 / size));
+                } while (readAheadBytesRead != 0 && !_backgroundWorker.CancellationPending);
+
+                if (_backgroundWorker.CancellationPending)
+                    return hash = null;
+
+                return hash = _hashAlgorithm.Hash;
+
+                //TODO make cancellable
+                //http://www.alexandre-gomes.com/?p=144
+                //http://www.infinitec.de/post/2007/06/09/Displaying-progress-updates-when-hashing-large-files.aspx
+            }
+        }
     }
 }

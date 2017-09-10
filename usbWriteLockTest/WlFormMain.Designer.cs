@@ -59,6 +59,12 @@
             this.txtModel = new System.Windows.Forms.TextBox();
             this.lblDriveName = new System.Windows.Forms.Label();
             this.txtDriveName = new System.Windows.Forms.TextBox();
+            this.progressBar = new System.Windows.Forms.ProgressBar();
+            this.grpOperations = new System.Windows.Forms.GroupBox();
+            this.lstBoxLog = new System.Windows.Forms.ListBox();
+            this.btnRunTests = new System.Windows.Forms.Button();
+            this.btnResetResults = new System.Windows.Forms.Button();
+            this.btnCancelOp = new System.Windows.Forms.Button();
             this.grpDrives.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.grdDevices)).BeginInit();
             this.grpVolumes.SuspendLayout();
@@ -66,6 +72,7 @@
             this.grpBoxInfo.SuspendLayout();
             this.grpHash2.SuspendLayout();
             this.grpBoxHash1.SuspendLayout();
+            this.grpOperations.SuspendLayout();
             this.SuspendLayout();
             // 
             // grpDrives
@@ -73,7 +80,7 @@
             this.grpDrives.Controls.Add(this.grdDevices);
             this.grpDrives.Location = new System.Drawing.Point(12, 12);
             this.grpDrives.Name = "grpDrives";
-            this.grpDrives.Size = new System.Drawing.Size(472, 155);
+            this.grpDrives.Size = new System.Drawing.Size(494, 155);
             this.grpDrives.TabIndex = 0;
             this.grpDrives.TabStop = false;
             this.grpDrives.Text = "USB Devices";
@@ -95,18 +102,18 @@
             this.grdDevices.RowHeadersVisible = false;
             this.grdDevices.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.grdDevices.ShowEditingIcon = false;
-            this.grdDevices.Size = new System.Drawing.Size(466, 136);
+            this.grdDevices.Size = new System.Drawing.Size(488, 136);
             this.grdDevices.TabIndex = 0;
             this.grdDevices.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.grdDevices_CellClick);
             this.grdDevices.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.grdDevices_CellFormatting);
             // 
             // btnCheckSum1
             // 
-            this.btnCheckSum1.Location = new System.Drawing.Point(38, 297);
+            this.btnCheckSum1.Location = new System.Drawing.Point(6, 267);
             this.btnCheckSum1.Name = "btnCheckSum1";
-            this.btnCheckSum1.Size = new System.Drawing.Size(145, 23);
+            this.btnCheckSum1.Size = new System.Drawing.Size(141, 23);
             this.btnCheckSum1.TabIndex = 1;
-            this.btnCheckSum1.Text = "Calulate device checksum";
+            this.btnCheckSum1.Text = "C&alulate device checksum";
             this.btnCheckSum1.UseVisualStyleBackColor = true;
             this.btnCheckSum1.Click += new System.EventHandler(this.btnCheckSum1_Click);
             // 
@@ -202,7 +209,7 @@
             this.grpBoxHash1.Size = new System.Drawing.Size(504, 43);
             this.grpBoxHash1.TabIndex = 25;
             this.grpBoxHash1.TabStop = false;
-            this.grpBoxHash1.Text = "Computed Hash";
+            this.grpBoxHash1.Text = "First Computed Hash";
             // 
             // txtComputedHash
             // 
@@ -391,13 +398,72 @@
             this.txtDriveName.Size = new System.Drawing.Size(408, 20);
             this.txtDriveName.TabIndex = 0;
             // 
+            // progressBar
+            // 
+            this.progressBar.Location = new System.Drawing.Point(6, 22);
+            this.progressBar.Name = "progressBar";
+            this.progressBar.Size = new System.Drawing.Size(482, 17);
+            this.progressBar.Step = 1;
+            this.progressBar.TabIndex = 4;
+            // 
+            // grpOperations
+            // 
+            this.grpOperations.Controls.Add(this.btnCancelOp);
+            this.grpOperations.Controls.Add(this.btnResetResults);
+            this.grpOperations.Controls.Add(this.btnRunTests);
+            this.grpOperations.Controls.Add(this.lstBoxLog);
+            this.grpOperations.Controls.Add(this.btnCheckSum1);
+            this.grpOperations.Controls.Add(this.progressBar);
+            this.grpOperations.Location = new System.Drawing.Point(12, 173);
+            this.grpOperations.Name = "grpOperations";
+            this.grpOperations.Size = new System.Drawing.Size(494, 402);
+            this.grpOperations.TabIndex = 5;
+            this.grpOperations.TabStop = false;
+            this.grpOperations.Text = "Testing";
+            // 
+            // lstBoxLog
+            // 
+            this.lstBoxLog.FormattingEnabled = true;
+            this.lstBoxLog.Location = new System.Drawing.Point(7, 48);
+            this.lstBoxLog.Name = "lstBoxLog";
+            this.lstBoxLog.Size = new System.Drawing.Size(481, 186);
+            this.lstBoxLog.TabIndex = 5;
+            // 
+            // btnRunTests
+            // 
+            this.btnRunTests.Location = new System.Drawing.Point(7, 296);
+            this.btnRunTests.Name = "btnRunTests";
+            this.btnRunTests.Size = new System.Drawing.Size(141, 23);
+            this.btnRunTests.TabIndex = 6;
+            this.btnRunTests.Text = "&Run tests";
+            this.btnRunTests.UseVisualStyleBackColor = true;
+            // 
+            // btnResetResults
+            // 
+            this.btnResetResults.Location = new System.Drawing.Point(7, 364);
+            this.btnResetResults.Name = "btnResetResults";
+            this.btnResetResults.Size = new System.Drawing.Size(140, 23);
+            this.btnResetResults.TabIndex = 7;
+            this.btnResetResults.Text = "&Reset results";
+            this.btnResetResults.UseVisualStyleBackColor = true;
+            // 
+            // btnCancelOp
+            // 
+            this.btnCancelOp.Enabled = false;
+            this.btnCancelOp.Location = new System.Drawing.Point(7, 325);
+            this.btnCancelOp.Name = "btnCancelOp";
+            this.btnCancelOp.Size = new System.Drawing.Size(141, 23);
+            this.btnCancelOp.TabIndex = 8;
+            this.btnCancelOp.Text = "&Cancel operation";
+            this.btnCancelOp.UseVisualStyleBackColor = true;
+            // 
             // WlFormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1040, 589);
+            this.ClientSize = new System.Drawing.Size(1040, 586);
+            this.Controls.Add(this.grpOperations);
             this.Controls.Add(this.grpBoxInfo);
-            this.Controls.Add(this.btnCheckSum1);
             this.Controls.Add(this.grpDrives);
             this.Name = "WlFormMain";
             this.Text = "WlFormMain";
@@ -412,6 +478,7 @@
             this.grpHash2.PerformLayout();
             this.grpBoxHash1.ResumeLayout(false);
             this.grpBoxHash1.PerformLayout();
+            this.grpOperations.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -451,6 +518,12 @@
         private System.Windows.Forms.GroupBox grpBoxHash1;
         private System.Windows.Forms.GroupBox grpHash2;
         private System.Windows.Forms.TextBox txtComputedHash2;
+        private System.Windows.Forms.ProgressBar progressBar;
+        private System.Windows.Forms.GroupBox grpOperations;
+        private System.Windows.Forms.Button btnResetResults;
+        private System.Windows.Forms.Button btnRunTests;
+        private System.Windows.Forms.ListBox lstBoxLog;
+        private System.Windows.Forms.Button btnCancelOp;
     }
 }
 
