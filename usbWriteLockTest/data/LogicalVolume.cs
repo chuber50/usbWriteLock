@@ -1,9 +1,10 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using usbWriteLockTest.native;
 
 namespace usbWriteLockTest.data
 {
-    public class LogicalVolume
+    public class LogicalVolume : IEquatable<LogicalVolume>
     {
         WinApiVolume nativeVolume;
 
@@ -49,6 +50,9 @@ namespace usbWriteLockTest.data
         [DisplayName("Mounted")]
         public bool mounted { get; set; } = true;
 
+        [Browsable(false)]
+        public bool isUpToDate { get; set; }
+
         public void Lock()
         {
             if (!locked)
@@ -71,6 +75,12 @@ namespace usbWriteLockTest.data
             {
                 mounted = nativeVolume.Dismount();
             }
+        }
+
+        public bool Equals(LogicalVolume other)
+        {
+            return String.Compare(deviceId, other.deviceId, StringComparison.Ordinal) == 0 &&
+                   totalSize == other.totalSize;
         }
     }
 }

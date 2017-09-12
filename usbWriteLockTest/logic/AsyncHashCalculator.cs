@@ -30,7 +30,7 @@ namespace usbWriteLockTest.logic
             progressChanged?.Invoke(this, e);
         }
 
-        public string ComputeHash()
+        public string computeHash()
         {
             Debug.Assert(_usbDrive.volumes.TrueForAll(v => v.locked));
 
@@ -64,7 +64,7 @@ namespace usbWriteLockTest.logic
                 } while (readAheadBytesRead != 0 && !_backgroundWorker.CancellationPending);
 
                 if (_backgroundWorker.CancellationPending)
-                    return null;
+                    return String.Empty;
 
                 _usbDrive.AddHash(BitConverter.ToString(_hashAlgorithm.Hash).Replace("-", string.Empty));
                 

@@ -18,13 +18,13 @@ namespace usbWriteLockTest.logic
             // Add USB plugged event watching
             _watcherAttach = new ManagementEventWatcher();
             _watcherAttach.EventArrived += attaching;
-            _watcherAttach.Query = new WqlEventQuery("SELECT * FROM Win32_DeviceChangeEvent WHERE EventType = 2");
+            _watcherAttach.Query = new WqlEventQuery("SELECT * FROM Win32_DeviceChangeEvent WHERE EventType = 2 GROUP WITHIN 3");
             _watcherAttach.Start();
 
             // Add USB unplugged event watching
             _watcherDetach = new ManagementEventWatcher();
             _watcherDetach.EventArrived += detaching;
-            _watcherDetach.Query = new WqlEventQuery("SELECT * FROM Win32_DeviceChangeEvent WHERE EventType = 3");
+            _watcherDetach.Query = new WqlEventQuery("SELECT * FROM Win32_DeviceChangeEvent WHERE EventType = 3 GROUP WITHIN 3");
             _watcherDetach.Start();
         }
 

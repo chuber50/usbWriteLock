@@ -19,6 +19,11 @@ namespace usbWriteLockTest
         private void WlFormMain_Load(object sender, EventArgs e)
         {
             grdDevices.DataSource = _deviceCollector.drives;
+            if (_deviceCollector.drives.Count > 0)
+            {
+                updateDetails(0);
+            }
+
             _watcher = new PnpEventWatcher(this.updateDeviceGrid);
             _hashWorker = new BackgroundWorker();
             _hashWorker.WorkerReportsProgress = true;
@@ -32,36 +37,7 @@ namespace usbWriteLockTest
                 hashWorker_ProgressChanged;
         }
 
-        private void grdDevices_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
-        {
-            if (this.grdDevices.Columns[e.ColumnIndex].HeaderText.Equals("Total Size"))
-            {
-                if (e.Value != null)
-                {
-                    convertByteColumn(e);
-                }
-            }
-        }
-
-        private void updateGrid()
-        {
-            grdDevices.Update();
-            grdDevices.Refresh();
-        }
-
-        private void updateDeviceGrid()
-        {
-            _deviceCollector.repollDevices();
-            if (this.grdDevices.InvokeRequired)
-            {
-                StringArgReturningVoidDelegate d = updateGrid;
-                this.Invoke(d, new Object[] { });
-            }
-            else
-            {
-                updateGrid();
-            }
-        }
+        
 
         delegate void StringArgReturningVoidDelegate();
 
@@ -103,31 +79,39 @@ namespace usbWriteLockTest
         //http://www.infinitec.de/post/2007/06/09/Displaying-progress-updates-when-hashing-large-files.aspx
         private void btnCheckSum1_Click(object sender, EventArgs e)
         {
-            DeviceHandler deviceHandler = new DeviceHandler(_deviceCollector.drives[grdDevices.CurrentCell.RowIndex]);
-            deviceHandler.LockVolumes();
-
-            //ProgressPercentage.Visible = true;
-            //ProgressBar.Visible = true;
-            //StatusText.Text = "Computing hash...";
-
             if (!_hashWorker.IsBusy)
             {
+                btnCancelOp.Enabled = true;
+                btnCheckSum1.Enabled = false;
+                pictWorking.Visible = true;
+                pictWorking.Enabled = true;
+                grdDevices.Enabled = false;
+                grdVolumes.Enabled = false;
+                grdHashes.Enabled = false;
+                btnRunTests.Enabled = false;
+                btnResetResults.Enabled = false;
+                logAdd($"Started calculating hash.");
                 _hashWorker.RunWorkerAsync();
             }
-            deviceHandler.UnlockVolumes();
+            
         }
 
         private void hashWorker_DoWork(object sender, DoWorkEventArgs e)
         {
-            // Get the BackgroundWorker that raised this event.
             BackgroundWorker worker = sender as BackgroundWorker;
 
-            // Assign the result of the computation
-            // to the Result property of the DoWorkEventArgs
-            // object. This is will be available to the 
-            // RunWorkerCompleted eventhandler.
+            DeviceHandler deviceHandler = new DeviceHandler(_deviceCollector.drives[grdDevices.CurrentCell.RowIndex]);
+            deviceHandler.LockVolumes();
+
             AsyncHashCalculator hashCalculator = new AsyncHashCalculator(worker, _deviceCollector.drives[grdDevices.CurrentCell.RowIndex]);
-            e.Result = hashCalculator.ComputeHash();
+            e.Result = hashCalculator.computeHash();
+
+            if (worker != null && worker.CancellationPending)
+            {
+                e.Cancel = true;
+            }
+
+            deviceHandler.UnlockVolumes();
         }
 
         private void hashWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -135,32 +119,23 @@ namespace usbWriteLockTest
             // First, handle the case where an exception was thrown.
             if (e.Error != null)
             {
-                MessageBox.Show(e.Error.Message);
+                logAdd($"Hashworker: {e.Error.Message}");
             }
             else if (e.Cancelled)
             {
-                // Next, handle the case where the user canceled 
-                // the operation.
-                // Note that due to a race condition in 
-                // the DoWork event handler, the Cancelled
-                // flag may not have been set, even though
-                // CancelAsync was called.
-                lstBoxLog.Items.Add("Canceled");
+                logAdd("Hashworker has been cancelled by user.");
             }
             else
             {
-                // Finally, handle the case where the operation 
-                // succeeded.
-                grdHashes.DataSource = _deviceCollector.drives[grdDevices.CurrentCell.RowIndex].hashes;
-                grdVolumes.Update();
-                grdVolumes.Refresh();
+                logAdd($"Hashworker successfully computed hash: {(string)e.Result}");
             }
 
-            // Enable the Start button.
-            btnCheckSum1.Enabled = true;
+            updateForm();
 
-            // Disable the Cancel button.
+            btnCheckSum1.Enabled = true;
             btnCancelOp.Enabled = false;
+            pictWorking.Enabled = false;
+            progressBar.Value = 0;
         }
 
         // This event handler updates the progress bar.
@@ -171,21 +146,85 @@ namespace usbWriteLockTest
 
         private void grdDevices_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            txtDriveName.Text = _deviceCollector.drives[e.RowIndex].driveName;
-            txtModel.Text = _deviceCollector.drives[e.RowIndex].model;
-            txtTotalSize.Text = _deviceCollector.drives[e.RowIndex].driveSize.ToString();
-            txtSectorsTrack.Text = _deviceCollector.drives[e.RowIndex].sectorsPerTrack.ToString();
-            txtTracksCyl.Text = _deviceCollector.drives[e.RowIndex].tracksPerCylinder.ToString();
-            txtBytesSector.Text = _deviceCollector.drives[e.RowIndex].bytesPerSector.ToString();
-            txtTotalCyl.Text = _deviceCollector.drives[e.RowIndex].totalCylinders.ToString();
-            txtTotalHeads.Text = _deviceCollector.drives[e.RowIndex].totalHeads.ToString();
-            txtTotalTracks.Text = _deviceCollector.drives[e.RowIndex].totalTracks.ToString();
-            txtTotalSectors.Text = _deviceCollector.drives[e.RowIndex].totalSectors.ToString();
-    
-            grdVolumes.DataSource = _deviceCollector.drives[e.RowIndex].volumes;
-            grdVolumes.Update();
-            grdVolumes.Refresh();
+            updateDetails(e.RowIndex);
         }
 
+        private void updateDetails(int rowIndex)
+        {
+            if (rowIndex >= 0 && _deviceCollector.drives.Count >= rowIndex)
+            {
+                txtDriveName.Text = _deviceCollector.drives[rowIndex].driveName;
+                txtModel.Text = _deviceCollector.drives[rowIndex].model;
+                txtTotalSize.Text = _deviceCollector.drives[rowIndex].driveSize.ToString();
+                txtSectorsTrack.Text = _deviceCollector.drives[rowIndex].sectorsPerTrack.ToString();
+                txtTracksCyl.Text = _deviceCollector.drives[rowIndex].tracksPerCylinder.ToString();
+                txtBytesSector.Text = _deviceCollector.drives[rowIndex].bytesPerSector.ToString();
+                txtTotalCyl.Text = _deviceCollector.drives[rowIndex].totalCylinders.ToString();
+                txtTotalHeads.Text = _deviceCollector.drives[rowIndex].totalHeads.ToString();
+                txtTotalTracks.Text = _deviceCollector.drives[rowIndex].totalTracks.ToString();
+                txtTotalSectors.Text = _deviceCollector.drives[rowIndex].totalSectors.ToString();
+
+                grdVolumes.DataSource = null;
+                grdVolumes.DataSource = _deviceCollector.drives[rowIndex].volumes;
+                grdHashes.DataSource = null;
+                grdHashes.DataSource = _deviceCollector.drives[rowIndex].hashes;
+
+            }
+        }
+
+        private void grdDevices_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if (this.grdDevices.Columns[e.ColumnIndex].HeaderText.Equals("Total Size"))
+            {
+                if (e.Value != null)
+                {
+                    convertByteColumn(e);
+                }
+            }
+        }
+
+        private void updateForm()
+        {
+            grdDevices.DataSource = null;
+            grdDevices.DataSource = _deviceCollector.drives;
+            if (grdDevices.CurrentRow != null)
+            {
+                updateDetails(grdDevices.CurrentRow.Index);
+            } 
+        }
+
+        private void updateDeviceGrid()
+        {
+            _deviceCollector.repollDevices();
+            if (this.grdDevices.InvokeRequired)
+            {
+                StringArgReturningVoidDelegate d = updateForm;
+                this.Invoke(d, new object[] { });
+            }
+            else
+            {
+                updateForm();
+            }
+        }
+
+        private void grdHashes_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
+        {
+            grdHashes.Columns[0].Width = 40;
+        }
+
+        private void btnCancelOp_Click(object sender, EventArgs e)
+        {
+            progressBar.Value = 0;
+            pictWorking.Visible = false;
+            _hashWorker.CancelAsync();
+        }
+
+        public void logAdd(string logMsg)
+        {
+            rtbLog.AppendText(Environment.NewLine + DateTime.Now.ToLocalTime() +  
+                $" {grdDevices.CurrentRow?.Cells[0].Value ?? ""} (SN {grdDevices.CurrentRow?.Cells[3].Value ?? ""}): " 
+                + logMsg);
+            rtbLog.ScrollToCaret();
+        }
     }
 }

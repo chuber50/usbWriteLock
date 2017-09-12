@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(WlFormMain));
             this.grpDrives = new System.Windows.Forms.GroupBox();
             this.grdDevices = new System.Windows.Forms.DataGridView();
             this.btnCheckSum1 = new System.Windows.Forms.Button();
@@ -35,6 +36,7 @@
             this.grdVolumes = new System.Windows.Forms.DataGridView();
             this.grpBoxInfo = new System.Windows.Forms.GroupBox();
             this.grpBoxHash1 = new System.Windows.Forms.GroupBox();
+            this.grdHashes = new System.Windows.Forms.DataGridView();
             this.label9 = new System.Windows.Forms.Label();
             this.lblTotalTracks = new System.Windows.Forms.Label();
             this.txtTotalTracks = new System.Windows.Forms.TextBox();
@@ -58,19 +60,20 @@
             this.txtDriveName = new System.Windows.Forms.TextBox();
             this.progressBar = new System.Windows.Forms.ProgressBar();
             this.grpOperations = new System.Windows.Forms.GroupBox();
+            this.pictWorking = new System.Windows.Forms.PictureBox();
             this.btnCancelOp = new System.Windows.Forms.Button();
             this.btnResetResults = new System.Windows.Forms.Button();
             this.btnRunTests = new System.Windows.Forms.Button();
-            this.lstBoxLog = new System.Windows.Forms.ListBox();
-            this.grdHashes = new System.Windows.Forms.DataGridView();
+            this.rtbLog = new System.Windows.Forms.RichTextBox();
             this.grpDrives.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.grdDevices)).BeginInit();
             this.grpVolumes.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.grdVolumes)).BeginInit();
             this.grpBoxInfo.SuspendLayout();
             this.grpBoxHash1.SuspendLayout();
-            this.grpOperations.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.grdHashes)).BeginInit();
+            this.grpOperations.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictWorking)).BeginInit();
             this.SuspendLayout();
             // 
             // grpDrives
@@ -188,6 +191,27 @@
             this.grpBoxHash1.TabIndex = 25;
             this.grpBoxHash1.TabStop = false;
             this.grpBoxHash1.Text = "Computed Hashes";
+            // 
+            // grdHashes
+            // 
+            this.grdHashes.AllowUserToAddRows = false;
+            this.grdHashes.AllowUserToDeleteRows = false;
+            this.grdHashes.AllowUserToResizeRows = false;
+            this.grdHashes.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.grdHashes.BackgroundColor = System.Drawing.SystemColors.Window;
+            this.grdHashes.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.grdHashes.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.grdHashes.Location = new System.Drawing.Point(3, 16);
+            this.grdHashes.MultiSelect = false;
+            this.grdHashes.Name = "grdHashes";
+            this.grdHashes.ReadOnly = true;
+            this.grdHashes.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
+            this.grdHashes.RowHeadersVisible = false;
+            this.grdHashes.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.grdHashes.ShowEditingIcon = false;
+            this.grdHashes.Size = new System.Drawing.Size(498, 108);
+            this.grdHashes.TabIndex = 2;
+            this.grdHashes.DataBindingComplete += new System.Windows.Forms.DataGridViewBindingCompleteEventHandler(this.grdHashes_DataBindingComplete);
             // 
             // label9
             // 
@@ -369,18 +393,19 @@
             // 
             // progressBar
             // 
-            this.progressBar.Location = new System.Drawing.Point(6, 22);
+            this.progressBar.Location = new System.Drawing.Point(7, 19);
             this.progressBar.Name = "progressBar";
-            this.progressBar.Size = new System.Drawing.Size(482, 17);
+            this.progressBar.Size = new System.Drawing.Size(450, 17);
             this.progressBar.Step = 1;
             this.progressBar.TabIndex = 4;
             // 
             // grpOperations
             // 
+            this.grpOperations.Controls.Add(this.rtbLog);
+            this.grpOperations.Controls.Add(this.pictWorking);
             this.grpOperations.Controls.Add(this.btnCancelOp);
             this.grpOperations.Controls.Add(this.btnResetResults);
             this.grpOperations.Controls.Add(this.btnRunTests);
-            this.grpOperations.Controls.Add(this.lstBoxLog);
             this.grpOperations.Controls.Add(this.btnCheckSum1);
             this.grpOperations.Controls.Add(this.progressBar);
             this.grpOperations.Location = new System.Drawing.Point(12, 173);
@@ -388,7 +413,18 @@
             this.grpOperations.Size = new System.Drawing.Size(494, 402);
             this.grpOperations.TabIndex = 5;
             this.grpOperations.TabStop = false;
-            this.grpOperations.Text = "Testing";
+            this.grpOperations.Text = "Operations";
+            // 
+            // pictWorking
+            // 
+            this.pictWorking.Enabled = false;
+            this.pictWorking.Image = ((System.Drawing.Image)(resources.GetObject("pictWorking.Image")));
+            this.pictWorking.Location = new System.Drawing.Point(472, 19);
+            this.pictWorking.Name = "pictWorking";
+            this.pictWorking.Size = new System.Drawing.Size(16, 15);
+            this.pictWorking.TabIndex = 9;
+            this.pictWorking.TabStop = false;
+            this.pictWorking.Visible = false;
             // 
             // btnCancelOp
             // 
@@ -399,6 +435,7 @@
             this.btnCancelOp.TabIndex = 8;
             this.btnCancelOp.Text = "&Cancel operation";
             this.btnCancelOp.UseVisualStyleBackColor = true;
+            this.btnCancelOp.Click += new System.EventHandler(this.btnCancelOp_Click);
             // 
             // btnResetResults
             // 
@@ -418,33 +455,16 @@
             this.btnRunTests.Text = "&Run tests";
             this.btnRunTests.UseVisualStyleBackColor = true;
             // 
-            // lstBoxLog
+            // rtbLog
             // 
-            this.lstBoxLog.FormattingEnabled = true;
-            this.lstBoxLog.Location = new System.Drawing.Point(7, 48);
-            this.lstBoxLog.Name = "lstBoxLog";
-            this.lstBoxLog.Size = new System.Drawing.Size(481, 186);
-            this.lstBoxLog.TabIndex = 5;
-            // 
-            // grdHashes
-            // 
-            this.grdHashes.AllowUserToAddRows = false;
-            this.grdHashes.AllowUserToDeleteRows = false;
-            this.grdHashes.AllowUserToResizeRows = false;
-            this.grdHashes.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            this.grdHashes.BackgroundColor = System.Drawing.SystemColors.Window;
-            this.grdHashes.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.grdHashes.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.grdHashes.Location = new System.Drawing.Point(3, 16);
-            this.grdHashes.MultiSelect = false;
-            this.grdHashes.Name = "grdHashes";
-            this.grdHashes.ReadOnly = true;
-            this.grdHashes.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
-            this.grdHashes.RowHeadersVisible = false;
-            this.grdHashes.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.grdHashes.ShowEditingIcon = false;
-            this.grdHashes.Size = new System.Drawing.Size(498, 108);
-            this.grdHashes.TabIndex = 2;
+            this.rtbLog.BackColor = System.Drawing.SystemColors.Window;
+            this.rtbLog.DetectUrls = false;
+            this.rtbLog.Location = new System.Drawing.Point(7, 42);
+            this.rtbLog.Name = "rtbLog";
+            this.rtbLog.ReadOnly = true;
+            this.rtbLog.Size = new System.Drawing.Size(481, 218);
+            this.rtbLog.TabIndex = 10;
+            this.rtbLog.Text = "";
             // 
             // WlFormMain
             // 
@@ -454,8 +474,9 @@
             this.Controls.Add(this.grpOperations);
             this.Controls.Add(this.grpBoxInfo);
             this.Controls.Add(this.grpDrives);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "WlFormMain";
-            this.Text = "WlFormMain";
+            this.Text = "USB WriteLock Test Application";
             this.Load += new System.EventHandler(this.WlFormMain_Load);
             this.grpDrives.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.grdDevices)).EndInit();
@@ -464,8 +485,9 @@
             this.grpBoxInfo.ResumeLayout(false);
             this.grpBoxInfo.PerformLayout();
             this.grpBoxHash1.ResumeLayout(false);
-            this.grpOperations.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.grdHashes)).EndInit();
+            this.grpOperations.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.pictWorking)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -506,9 +528,10 @@
         private System.Windows.Forms.GroupBox grpOperations;
         private System.Windows.Forms.Button btnResetResults;
         private System.Windows.Forms.Button btnRunTests;
-        private System.Windows.Forms.ListBox lstBoxLog;
         private System.Windows.Forms.Button btnCancelOp;
         private System.Windows.Forms.DataGridView grdHashes;
+        private System.Windows.Forms.PictureBox pictWorking;
+        private System.Windows.Forms.RichTextBox rtbLog;
     }
 }
 
