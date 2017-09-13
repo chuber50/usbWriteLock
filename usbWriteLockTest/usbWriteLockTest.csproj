@@ -71,11 +71,6 @@
     <Compile Include="native\constant\EMoveMethod.cs" />
     <Compile Include="native\constant\EShareMethod.cs" />
     <Compile Include="native\Prototypes.cs" />
-    <Compile Include="Properties\Resources1.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
     <Compile Include="WlFormMain.cs">
       <SubType>Form</SubType>
     </Compile>

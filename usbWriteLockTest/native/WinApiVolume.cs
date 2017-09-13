@@ -226,10 +226,6 @@ namespace usbWriteLockTest.native
 
         public void throwLastWin32Err()
         {
-            MessageBox.Show("USB Writelock Filter Driver must be unloaded when starting the test application.",
-                "USB Writelock Test Application",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Exclamation);
             Marshal.ThrowExceptionForHR(
                 Marshal.GetHRForLastWin32Error());
         }
