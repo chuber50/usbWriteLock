@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Windows.Forms;
 using Microsoft.Win32.SafeHandles;
 using usbWriteLockTest.native.constant;
 using static usbWriteLockTest.native.Prototypes;
@@ -225,6 +226,10 @@ namespace usbWriteLockTest.native
 
         public void throwLastWin32Err()
         {
+            MessageBox.Show("USB Writelock Filter Driver must be unloaded when starting the test application.",
+                "USB Writelock Test Application",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Exclamation);
             Marshal.ThrowExceptionForHR(
                 Marshal.GetHRForLastWin32Error());
         }

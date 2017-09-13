@@ -8,7 +8,7 @@ namespace usbWriteLockTest
     public partial class WlFormMain : Form
     {
         private PnpEventWatcher _watcher;
-        private readonly DeviceCollector _deviceCollector = new DeviceCollector();
+        private DeviceCollector _deviceCollector;
         private BackgroundWorker _hashWorker;
 
         public WlFormMain()
@@ -18,6 +18,19 @@ namespace usbWriteLockTest
 
         private void WlFormMain_Load(object sender, EventArgs e)
         {
+            try
+            {
+                _deviceCollector = new DeviceCollector();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                MessageBox.Show("USB Writelock Filter Driver must be unloaded when starting the test application.",
+                    "USB Writelock Test Application",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Exclamation);
+                Application.Exit();
+            }
+            
             grdDevices.DataSource = _deviceCollector.drives;
             if (_deviceCollector.drives.Count > 0)
             {
@@ -41,55 +54,12 @@ namespace usbWriteLockTest
 
         delegate void StringArgReturningVoidDelegate();
 
-        //https://social.msdn.microsoft.com/Forums/windows/en-US/62f5b477-5311-4de5-bc18-fbd29bbfc9e2/setting-an-image-column-in-a-datagrid-view-based-on-a-value-in-the-database-c?forum=winformsdatacontrols
-        private void convertByteColumn(DataGridViewCellFormattingEventArgs formatting)
-        {
-            if (formatting.Value != null)
-            {
-                try
-                {
-                    long bytes;
-                    bytes = Convert.ToInt64(formatting.Value);
-                    string size = "0 Bytes";
-
-                    //GB
-                    if (bytes >= 1073741824.0)
-                        size = $"{bytes / 1073741824.0:##.##}" + " GB";
-                    //MB
-                    else if (bytes >= 1048576.0)
-                        size = $"{bytes / 1048576.0:##.##}" + " MB";
-                    //KB
-                    else if (bytes >= 1024.0)
-                        size = $"{bytes / 1024.0:##.##}" + " KB";
-                    //Bytes
-                    else if (bytes > 0 && bytes < 1024.0)
-                        size = bytes + " Bytes";
-
-                    formatting.Value = size;
-                    formatting.FormattingApplied = true;
-                }
-                catch (FormatException)
-                {
-                    formatting.FormattingApplied = false;
-                }
-            }
-
-        }
-
         //http://www.infinitec.de/post/2007/06/09/Displaying-progress-updates-when-hashing-large-files.aspx
         private void btnCheckSum1_Click(object sender, EventArgs e)
         {
             if (!_hashWorker.IsBusy)
             {
-                btnCancelOp.Enabled = true;
-                btnCheckSum1.Enabled = false;
-                pictWorking.Visible = true;
-                pictWorking.Enabled = true;
-                grdDevices.Enabled = false;
-                grdVolumes.Enabled = false;
-                grdHashes.Enabled = false;
-                btnRunTests.Enabled = false;
-                btnResetResults.Enabled = false;
+                lockInterface();
                 logAdd($"Started calculating hash.");
                 _hashWorker.RunWorkerAsync();
             }
@@ -132,16 +102,13 @@ namespace usbWriteLockTest
 
             updateForm();
 
-            btnCheckSum1.Enabled = true;
-            btnCancelOp.Enabled = false;
-            pictWorking.Enabled = false;
-            progressBar.Value = 0;
+            unlockInterface(); 
         }
 
         // This event handler updates the progress bar.
         private void hashWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            this.progressBar.Value = e.ProgressPercentage;
+            this.progressBar.Value = e.ProgressPercentage <= 100 ? e.ProgressPercentage : 100;
         }
 
         private void grdDevices_CellClick(object sender, DataGridViewCellEventArgs e)
@@ -219,12 +186,89 @@ namespace usbWriteLockTest
             _hashWorker.CancelAsync();
         }
 
+        private void btnResetResults_Click(object sender, EventArgs e)
+        {
+            _deviceCollector.drives.ForEach(d => d.hashes.Clear());
+            if (grdDevices.CurrentRow != null) updateDetails(grdDevices.CurrentRow.Index);
+        }
+
         public void logAdd(string logMsg)
         {
-            rtbLog.AppendText(Environment.NewLine + DateTime.Now.ToLocalTime() +  
-                $" {grdDevices.CurrentRow?.Cells[0].Value ?? ""} (SN {grdDevices.CurrentRow?.Cells[3].Value ?? ""}): " 
-                + logMsg);
+            rtbLog.AppendText(Environment.NewLine + DateTime.Now.ToLocalTime() +
+                              $" {grdDevices.CurrentRow?.Cells[0].Value ?? ""} (SN {grdDevices.CurrentRow?.Cells[3].Value ?? ""}): "
+                              + logMsg);
             rtbLog.ScrollToCaret();
+        }
+
+        private void lockInterface()
+        {
+            btnCancelOp.Enabled = true;
+            btnCheckSum1.Enabled = false;
+            pictWorking.Visible = true;
+            pictWorking.Enabled = true;
+            grdDevices.Enabled = false;
+            grdVolumes.Enabled = false;
+            grdHashes.Enabled = false;
+            btnRunTests.Enabled = false;
+            btnResetResults.Enabled = false;
+        }
+
+        private void unlockInterface()
+        {
+            progressBar.Value = 0;
+            btnCancelOp.Enabled = false;
+            btnCheckSum1.Enabled = true;
+            pictWorking.Visible = false;
+            pictWorking.Enabled = false;
+            grdDevices.Enabled = true;
+            grdVolumes.Enabled = true;
+            grdHashes.Enabled = true;
+            btnRunTests.Enabled = true;
+            btnResetResults.Enabled = true;
+        }
+
+        //https://social.msdn.microsoft.com/Forums/windows/en-US/62f5b477-5311-4de5-bc18-fbd29bbfc9e2/setting-an-image-column-in-a-datagrid-view-based-on-a-value-in-the-database-c?forum=winformsdatacontrols
+        private void convertByteColumn(DataGridViewCellFormattingEventArgs formatting)
+        {
+            if (formatting.Value != null)
+            {
+                try
+                {
+                    long bytes;
+                    bytes = Convert.ToInt64(formatting.Value);
+                    string size = "0 Bytes";
+
+                    //GB
+                    if (bytes >= 1073741824.0)
+                        size = $"{bytes / 1073741824.0:##.##}" + " GB";
+                    //MB
+                    else if (bytes >= 1048576.0)
+                        size = $"{bytes / 1048576.0:##.##}" + " MB";
+                    //KB
+                    else if (bytes >= 1024.0)
+                        size = $"{bytes / 1024.0:##.##}" + " KB";
+                    //Bytes
+                    else if (bytes > 0 && bytes < 1024.0)
+                        size = bytes + " Bytes";
+
+                    formatting.Value = size;
+                    formatting.FormattingApplied = true;
+                }
+                catch (FormatException)
+                {
+                    formatting.FormattingApplied = false;
+                }
+            }
+
+        }
+
+        private void btnRunTests_Click(object sender, EventArgs e)
+        {
+            WriteTester writeTester = new WriteTester(_deviceCollector.drives[grdDevices.CurrentRow.Index]);
+            if (writeTester.hasValidVolume)
+            {
+                logAdd(writeTester.test1_CreateFolder());
+            }
         }
     }
 }

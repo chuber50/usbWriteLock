@@ -60,11 +60,11 @@
             this.txtDriveName = new System.Windows.Forms.TextBox();
             this.progressBar = new System.Windows.Forms.ProgressBar();
             this.grpOperations = new System.Windows.Forms.GroupBox();
+            this.rtbLog = new System.Windows.Forms.RichTextBox();
             this.pictWorking = new System.Windows.Forms.PictureBox();
             this.btnCancelOp = new System.Windows.Forms.Button();
             this.btnResetResults = new System.Windows.Forms.Button();
             this.btnRunTests = new System.Windows.Forms.Button();
-            this.rtbLog = new System.Windows.Forms.RichTextBox();
             this.grpDrives.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.grdDevices)).BeginInit();
             this.grpVolumes.SuspendLayout();
@@ -415,6 +415,17 @@
             this.grpOperations.TabStop = false;
             this.grpOperations.Text = "Operations";
             // 
+            // rtbLog
+            // 
+            this.rtbLog.BackColor = System.Drawing.SystemColors.Window;
+            this.rtbLog.DetectUrls = false;
+            this.rtbLog.Location = new System.Drawing.Point(7, 42);
+            this.rtbLog.Name = "rtbLog";
+            this.rtbLog.ReadOnly = true;
+            this.rtbLog.Size = new System.Drawing.Size(481, 218);
+            this.rtbLog.TabIndex = 10;
+            this.rtbLog.Text = "";
+            // 
             // pictWorking
             // 
             this.pictWorking.Enabled = false;
@@ -445,6 +456,7 @@
             this.btnResetResults.TabIndex = 7;
             this.btnResetResults.Text = "&Reset results";
             this.btnResetResults.UseVisualStyleBackColor = true;
+            this.btnResetResults.Click += new System.EventHandler(this.btnResetResults_Click);
             // 
             // btnRunTests
             // 
@@ -454,17 +466,7 @@
             this.btnRunTests.TabIndex = 6;
             this.btnRunTests.Text = "&Run tests";
             this.btnRunTests.UseVisualStyleBackColor = true;
-            // 
-            // rtbLog
-            // 
-            this.rtbLog.BackColor = System.Drawing.SystemColors.Window;
-            this.rtbLog.DetectUrls = false;
-            this.rtbLog.Location = new System.Drawing.Point(7, 42);
-            this.rtbLog.Name = "rtbLog";
-            this.rtbLog.ReadOnly = true;
-            this.rtbLog.Size = new System.Drawing.Size(481, 218);
-            this.rtbLog.TabIndex = 10;
-            this.rtbLog.Text = "";
+            this.btnRunTests.Click += new System.EventHandler(this.btnRunTests_Click);
             // 
             // WlFormMain
             // 

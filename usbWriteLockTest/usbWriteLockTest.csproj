@@ -59,6 +59,7 @@
     <Compile Include="data\UsbDrive.cs" />
     <Compile Include="logic\DeviceCollector.cs" />
     <Compile Include="logic\PnpEventWatcher.cs" />
+    <Compile Include="logic\WriteTester.cs" />
     <Compile Include="native\DiskStream.cs" />
     <Compile Include="native\WinApiVolume.cs" />
     <Compile Include="native\constant\ECreateDisposition.cs" />
@@ -70,6 +71,11 @@
     <Compile Include="native\constant\EMoveMethod.cs" />
     <Compile Include="native\constant\EShareMethod.cs" />
     <Compile Include="native\Prototypes.cs" />
+    <Compile Include="Properties\Resources1.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="WlFormMain.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -83,12 +89,13 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
+      <LastGenOutput>Resources1.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <None Include="app.manifest">
       <SubType>Designer</SubType>
