@@ -45,6 +45,35 @@ namespace usbWriteLockTest.logic
             return $"Trying to create folder {dirName}: {msg}";
         }
 
+        //TODO create before lock?
+        public string test2_DeleteFolder()
+        {
+            string msg = CMsgSuccess;
+            try
+            {
+                Directory.Delete(dirName);
+            }
+            catch (Exception e)
+            {
+                msg = e.Message;
+            }
+            return $"Trying to delete folder {dirName}: {msg}";
+        }
+
+        public string test3_CreateFile()
+        {
+            string msg = CMsgSuccess;
+            try
+            {
+                Directory.Delete(dirName);
+            }
+            catch (Exception e)
+            {
+                msg = e.Message;
+            }
+            return $"Trying to delete folder {dirName}: {msg}";
+        }
+
         private string generateUniqueId()
         {
             return "WLTMP_" + Guid.NewGuid().ToString("D");
