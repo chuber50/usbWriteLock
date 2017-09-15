@@ -60,6 +60,7 @@
             this.txtDriveName = new System.Windows.Forms.TextBox();
             this.progressBar = new System.Windows.Forms.ProgressBar();
             this.grpOperations = new System.Windows.Forms.GroupBox();
+            this.btnPrepare = new System.Windows.Forms.Button();
             this.rtbLog = new System.Windows.Forms.RichTextBox();
             this.pictWorking = new System.Windows.Forms.PictureBox();
             this.btnCancelOp = new System.Windows.Forms.Button();
@@ -110,7 +111,7 @@
             // 
             // btnCheckSum1
             // 
-            this.btnCheckSum1.Location = new System.Drawing.Point(6, 267);
+            this.btnCheckSum1.Location = new System.Drawing.Point(7, 341);
             this.btnCheckSum1.Name = "btnCheckSum1";
             this.btnCheckSum1.Size = new System.Drawing.Size(141, 23);
             this.btnCheckSum1.TabIndex = 1;
@@ -401,6 +402,7 @@
             // 
             // grpOperations
             // 
+            this.grpOperations.Controls.Add(this.btnPrepare);
             this.grpOperations.Controls.Add(this.rtbLog);
             this.grpOperations.Controls.Add(this.pictWorking);
             this.grpOperations.Controls.Add(this.btnCancelOp);
@@ -414,6 +416,16 @@
             this.grpOperations.TabIndex = 5;
             this.grpOperations.TabStop = false;
             this.grpOperations.Text = "Operations";
+            // 
+            // btnPrepare
+            // 
+            this.btnPrepare.Location = new System.Drawing.Point(7, 285);
+            this.btnPrepare.Name = "btnPrepare";
+            this.btnPrepare.Size = new System.Drawing.Size(141, 23);
+            this.btnPrepare.TabIndex = 11;
+            this.btnPrepare.Text = "&Prepare for Tests";
+            this.btnPrepare.UseVisualStyleBackColor = true;
+            this.btnPrepare.Click += new System.EventHandler(this.btnPrepare_Click);
             // 
             // rtbLog
             // 
@@ -440,7 +452,7 @@
             // btnCancelOp
             // 
             this.btnCancelOp.Enabled = false;
-            this.btnCancelOp.Location = new System.Drawing.Point(7, 325);
+            this.btnCancelOp.Location = new System.Drawing.Point(6, 370);
             this.btnCancelOp.Name = "btnCancelOp";
             this.btnCancelOp.Size = new System.Drawing.Size(141, 23);
             this.btnCancelOp.TabIndex = 8;
@@ -450,7 +462,7 @@
             // 
             // btnResetResults
             // 
-            this.btnResetResults.Location = new System.Drawing.Point(7, 364);
+            this.btnResetResults.Location = new System.Drawing.Point(153, 370);
             this.btnResetResults.Name = "btnResetResults";
             this.btnResetResults.Size = new System.Drawing.Size(140, 23);
             this.btnResetResults.TabIndex = 7;
@@ -460,7 +472,7 @@
             // 
             // btnRunTests
             // 
-            this.btnRunTests.Location = new System.Drawing.Point(7, 296);
+            this.btnRunTests.Location = new System.Drawing.Point(152, 341);
             this.btnRunTests.Name = "btnRunTests";
             this.btnRunTests.Size = new System.Drawing.Size(141, 23);
             this.btnRunTests.TabIndex = 6;
@@ -476,8 +488,11 @@
             this.Controls.Add(this.grpOperations);
             this.Controls.Add(this.grpBoxInfo);
             this.Controls.Add(this.grpDrives);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MaximizeBox = false;
             this.Name = "WlFormMain";
+            this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.Text = "USB WriteLock Test Application";
             this.Load += new System.EventHandler(this.WlFormMain_Load);
             this.grpDrives.ResumeLayout(false);
@@ -534,6 +549,7 @@
         private System.Windows.Forms.DataGridView grdHashes;
         private System.Windows.Forms.PictureBox pictWorking;
         private System.Windows.Forms.RichTextBox rtbLog;
+        private System.Windows.Forms.Button btnPrepare;
     }
 }
 

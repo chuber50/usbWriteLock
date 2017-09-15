@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Windows.Forms;
+using usbWriteLockTest.data;
 using usbWriteLockTest.logic;
 
 namespace usbWriteLockTest
@@ -24,10 +25,7 @@ namespace usbWriteLockTest
             }
             catch (UnauthorizedAccessException)
             {
-                MessageBox.Show("USB Writelock Filter Driver must be unloaded when starting the test application.",
-                    "USB Writelock Test Application",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Exclamation);
+                okMsgBox("Write locking must be unloaded when starting the test application.");
                 Application.Exit();
             }
             
@@ -48,6 +46,8 @@ namespace usbWriteLockTest
                 hashWorker_RunWorkerCompleted;
             _hashWorker.ProgressChanged +=
                 hashWorker_ProgressChanged;
+
+            logAdd("Application initialized");
         }
 
         
@@ -86,7 +86,6 @@ namespace usbWriteLockTest
 
         private void hashWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            // First, handle the case where an exception was thrown.
             if (e.Error != null)
             {
                 logAdd($"Hashworker: {e.Error.Message}");
@@ -105,7 +104,6 @@ namespace usbWriteLockTest
             unlockInterface(); 
         }
 
-        // This event handler updates the progress bar.
         private void hashWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             this.progressBar.Value = e.ProgressPercentage <= 100 ? e.ProgressPercentage : 100;
@@ -196,7 +194,7 @@ namespace usbWriteLockTest
         {
             rtbLog.AppendText(Environment.NewLine + DateTime.Now.ToLocalTime() +
                               $" {grdDevices.CurrentRow?.Cells[0].Value ?? ""} (SN {grdDevices.CurrentRow?.Cells[3].Value ?? ""}): "
-                              + logMsg);
+                              + logMsg + Environment.NewLine);
             rtbLog.ScrollToCaret();
         }
 
@@ -211,6 +209,7 @@ namespace usbWriteLockTest
             grdHashes.Enabled = false;
             btnRunTests.Enabled = false;
             btnResetResults.Enabled = false;
+            btnPrepare.Enabled = false;
         }
 
         private void unlockInterface()
@@ -225,6 +224,7 @@ namespace usbWriteLockTest
             grdHashes.Enabled = true;
             btnRunTests.Enabled = true;
             btnResetResults.Enabled = true;
+            btnPrepare.Enabled = true;
         }
 
         //https://social.msdn.microsoft.com/Forums/windows/en-US/62f5b477-5311-4de5-bc18-fbd29bbfc9e2/setting-an-image-column-in-a-datagrid-view-based-on-a-value-in-the-database-c?forum=winformsdatacontrols
@@ -264,11 +264,47 @@ namespace usbWriteLockTest
 
         private void btnRunTests_Click(object sender, EventArgs e)
         {
-            WriteTester writeTester = new WriteTester(_deviceCollector.drives[grdDevices.CurrentRow.Index]);
-            if (writeTester.hasValidVolume)
+            DialogResult result = yncMsgBox("This action could delete all contents on your drive! Continue?");
+            if (result == DialogResult.Yes)
             {
-                logAdd(writeTester.test1_CreateFolder());
+                TestMeta testMeta = _deviceCollector.drives[grdDevices.CurrentRow.Index].getTestVolume();
+                if (testMeta.hasValidVolume)
+                {
+                    WriteTester writeTester = new WriteTester(testMeta);
+                    logAdd(writeTester.test1_CreateFolder());
+                    logAdd(writeTester.test2_CreateFile());
+                    logAdd(writeTester.test3_OverwriteFile());
+                    logAdd(writeTester.test4_SetFileAttributes());
+                    logAdd(writeTester.test5_SetDirCreateTime());
+                    logAdd(writeTester.test6_DeleteFile());
+                    logAdd(writeTester.test7_DeleteFolder());
+                }
             }
         }
+
+        private void btnPrepare_Click(object sender, EventArgs e)
+        {
+            DialogResult result = yncMsgBox("Write locking must be disabled when preparing the volume for testing! Continue?");
+            if (result == DialogResult.Yes) {
+                TestMeta testMeta = _deviceCollector.drives[grdDevices.CurrentRow.Index].getTestVolume();
+                VolumePreparer volumePreparer = new VolumePreparer(testMeta);
+                logAdd(volumePreparer.CreateFile());
+                logAdd(volumePreparer.CreateFolder());
+            }
+        }
+
+        private void okMsgBox(string text)
+        {
+            MessageBox.Show(text,
+                @"USB Writelock Test Application",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Exclamation);
+        }
+
+        private DialogResult yncMsgBox(string text)
+        {
+            return MessageBox.Show(text, @"USB Writelock Test Application", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+        }
+
     }
 }

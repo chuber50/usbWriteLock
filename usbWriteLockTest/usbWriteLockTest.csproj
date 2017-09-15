@@ -36,6 +36,12 @@
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>usbWriteLockTest.Program</StartupObject>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>wlControlApp.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -54,11 +60,13 @@
   <ItemGroup>
     <Compile Include="data\Hash.cs" />
     <Compile Include="data\LogicalVolume.cs" />
+    <Compile Include="data\TestMeta.cs" />
     <Compile Include="logic\AsyncHashCalculator.cs" />
     <Compile Include="logic\DeviceHandler.cs" />
     <Compile Include="data\UsbDrive.cs" />
     <Compile Include="logic\DeviceCollector.cs" />
     <Compile Include="logic\PnpEventWatcher.cs" />
+    <Compile Include="logic\VolumePreparer.cs" />
     <Compile Include="logic\WriteTester.cs" />
     <Compile Include="native\DiskStream.cs" />
     <Compile Include="native\WinApiVolume.cs" />
@@ -112,7 +120,9 @@
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="wlControlApp.ico" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

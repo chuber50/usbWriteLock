@@ -50,10 +50,10 @@ namespace usbWriteLockTest.logic
                     upToDate = true
                 };
 
-                foreach (PropertyData prop in queryObj.Properties)
-                {
-                    Console.WriteLine("{0}: {1}", prop.Name, prop.Value);
-                }
+                //foreach (PropertyData prop in queryObj.Properties)
+                //{
+                //    Console.WriteLine("{0}: {1}", prop.Name, prop.Value);
+                //}
 
                 foreach (var managementBaseObject in queryObj.GetRelated("Win32_DiskPartition"))
                 {

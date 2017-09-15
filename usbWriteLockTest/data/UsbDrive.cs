@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 
 namespace usbWriteLockTest.data
 {
@@ -8,6 +9,7 @@ namespace usbWriteLockTest.data
     {
         public List<LogicalVolume> volumes = new List<LogicalVolume>();
         public List<Hash> hashes = new List<Hash>();
+        public TestMeta testMeta;
 
         public UsbDrive(string driveName, string model, ulong driveSize)
         {
@@ -57,13 +59,24 @@ namespace usbWriteLockTest.data
         [Browsable(false)]
         public bool upToDate { get; set; }
 
-
-
         public bool Equals(UsbDrive other)
         {
             return String.Compare(driveName, other.driveName, StringComparison.Ordinal) == 0 &&
                    String.Compare(model, other.model, StringComparison.Ordinal) == 0 &&
                    driveSize == other.driveSize;
+        }
+
+        public TestMeta getTestVolume()
+        {
+            if (testMeta != null) return testMeta;
+
+            if (volumes.Count > 0)
+            {
+                testMeta = new TestMeta(volumes.FirstOrDefault(v => v.totalFreeSpace > TestMeta.CMinfreespace));
+                return testMeta;
+            }
+
+            return null;
         }
     }
 }
