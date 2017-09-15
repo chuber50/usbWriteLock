@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using System.Windows.Forms;
 using Microsoft.Win32.SafeHandles;
 using usbWriteLockTest.native.constant;
 using static usbWriteLockTest.native.Prototypes;
