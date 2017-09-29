@@ -409,7 +409,7 @@ Return Value:
 {
     FLT_PREOP_CALLBACK_STATUS returnStatus = FLT_PREOP_SUCCESS_NO_CALLBACK; //assume we are NOT going to call our completion routine
 
-	if (Data && Data->Iopb && Data->Iopb->MajorFunction == IRP_MJ_CREATE)
+	if (Data && Data->Iopb)
 	{
 		if (Data->Iopb->MajorFunction == IRP_MJ_CREATE)
 		{
@@ -419,29 +419,38 @@ Return Value:
 			PIO_SECURITY_CONTEXT SecurityContextPtr = ParameterPtr->Create.SecurityContext;
 
 			ACCESS_MASK desiredAccess = SecurityContextPtr->DesiredAccess;
-			BOOLEAN writeOperation = ((desiredAccess & (FILE_WRITE_DATA | FILE_WRITE_ATTRIBUTES | FILE_WRITE_EA | FILE_APPEND_DATA | DELETE | WRITE_DAC | WRITE_OWNER | FILE_ADD_FILE | FILE_ADD_SUBDIRECTORY)) ||
+			ACCESS_MASK createDisposition = ParameterPtr->Create.Options;
+
+			//SecurityContextPtr->AccessState.
+
+			const BOOLEAN writeOperation = ((desiredAccess & 
+				(FILE_WRITE_DATA | 
+					FILE_WRITE_ATTRIBUTES | 
+					FILE_WRITE_EA | 
+					FILE_APPEND_DATA | 
+					DELETE | 
+					WRITE_DAC | 
+					WRITE_OWNER | 
+					FILE_ADD_FILE | 
+					FILE_ADD_SUBDIRECTORY)) ||
 				(Data->Iopb->Parameters.Create.Options & FILE_DELETE_ON_CLOSE));
 
-			if (writeOperation) {
+			const BOOLEAN overwriteOperation = (createDisposition & 
+				(FILE_SUPERSEDE | 
+					FILE_CREATE | 
+					FILE_OVERWRITE | 
+					FILE_OVERWRITE_IF | 
+					FILE_ADD_FILE | 
+					FILE_ADD_SUBDIRECTORY));
+
+			if (writeOperation || overwriteOperation) {
 				Data->IoStatus.Status = STATUS_ACCESS_DENIED; //STATUS_CANCELLED; 
 				Data->IoStatus.Information = 0;
 				DbgPrint("IRP Major: %u \n", Data->Iopb->MajorFunction);
 				DbgPrint("IRP Minor: %u \n", Data->Iopb->MinorFunction);
 				return FLT_PREOP_COMPLETE;
 			}
-
-			ULONG createDisposition = Data->Iopb->Parameters.Create.Options;
-			BOOLEAN isNewFile = (createDisposition & (FILE_SUPERSEDE | FILE_CREATE | FILE_OVERWRITE | FILE_OVERWRITE_IF |  FILE_ADD_FILE | FILE_ADD_SUBDIRECTORY));
-
-			if (isNewFile) {
-				Data->IoStatus.Status = STATUS_ACCESS_DENIED; //STATUS_CANCELLED; 
-				Data->IoStatus.Information = 0;
-				DbgPrint("IRP Major: %u \n", Data->Iopb->MajorFunction);
-				DbgPrint("IRP Minor: %u \n", Data->Iopb->MinorFunction);
-				return FLT_PREOP_COMPLETE;
-			}
-		}
-		
+		}	
 	}
 
 	CompletionContext = NULL; // we don't pass data
