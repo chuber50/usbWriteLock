@@ -6,6 +6,7 @@ namespace usbWriteLockTest.data
     public class TestMeta
     {
         public const int CMinfreespace = 3000000;
+        private const string GuidPrefix = "WLTMP_";
 
         public TestMeta(LogicalVolume volume)
         {
@@ -27,7 +28,7 @@ namespace usbWriteLockTest.data
 
         private string generateUniqueId()
         {
-            return "WLTMP_" + Guid.NewGuid().ToString("D");
+            return GuidPrefix + Guid.NewGuid().ToString("D");
         }
     }
 }

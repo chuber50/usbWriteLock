@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Management;
@@ -19,8 +20,19 @@ namespace usbWriteLockTest.logic
 
         public void repollDevices()
         {
-            drives.ForEach(d => { d.upToDate = false; });
-            drives.ForEach(d => d.volumes.ForEach(v => { v.isUpToDate = false; }));
+            foreach (UsbDrive drive in drives)
+            {
+                drive.upToDate = false;
+                foreach (LogicalVolume vol in drive.volumes)
+                {
+                    vol.isUpToDate = false;
+                }
+            }
+
+            //BindingList does not support
+            //drives.ForEach(d => { d.upToDate = false; });
+            //drives.ForEach(d => d.volumes.ForEach(v => { v.isUpToDate = false; }));
+
             List<DriveInfo> driveInfos = DriveInfo.GetDrives().ToList();
 
             ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT * FROM Win32_DiskDrive WHERE InterfaceType='USB'");
@@ -109,7 +121,24 @@ namespace usbWriteLockTest.logic
                     drives.Add(newDrive);
                 }
             }
-            drives.RemoveAll(d => !d.upToDate);
+
+            foreach(UsbDrive drive in drives)
+            {
+                if (!drive.upToDate)
+                {
+                    //https://stackoverflow.com/questions/142003/cross-thread-operation-not-valid-control-accessed-from-a-thread-other-than-the
+                    drives.Remove(drive);
+                }
+            }
+            //drives.RemoveAll(d => !d.upToDate);
+        }
+
+        public void ClearHashes()
+        {
+            foreach (UsbDrive drive in drives)
+            {
+                drive.hashes.Clear();
+            }
         }
     }  
 }

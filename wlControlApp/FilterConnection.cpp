@@ -93,7 +93,7 @@ void FilterConnection::PollDevices()
 
 			volumeBuffer->FilterVolumeName[volumeBuffer->FilterVolumeNameLength / sizeof(WCHAR)] = UNICODE_NULL;
 
-			ULONG instanceCount = IsAttachedToVolume(volumeBuffer->FilterVolumeName);
+			const ULONG instanceCount = IsAttachedToVolume(volumeBuffer->FilterVolumeName);
 
 			volume *vol = new volume();
 			if (HRESULT(FilterGetDosName(volumeBuffer->FilterVolumeName, driveLetter, sizeof driveLetter / sizeof(WCHAR))) >= 0) 
@@ -215,13 +215,13 @@ Determine if our filter is attached to this volume
 
 BOOL FilterConnection::isUsbDevice(std::wstring volumeAccessPath)
 {
-
-	HANDLE deviceHandle = CreateFileW(volumeAccessPath.c_str(), 0, // no access to the drive
+	HANDLE deviceHandle = CreateFileW(volumeAccessPath.c_str(), 
+		0, // no access to the drive
 		FILE_SHARE_READ | // share mode
 		FILE_SHARE_WRITE, NULL,             // default security attributes
 		OPEN_EXISTING,    // disposition
 		0,                // file attributes
-		nullptr);            // do not copy file attributes
+		nullptr);         // do not copy file attributes
 
 	STORAGE_PROPERTY_QUERY query;
 	memset(&query, 0, sizeof(query));

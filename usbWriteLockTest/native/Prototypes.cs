@@ -11,9 +11,6 @@ namespace usbWriteLockTest.native
 
         public const uint InvalidSetFilePointer = 0xFFFFFFFF;
 
-        // Use interop to call the CreateFile function.
-        // For more information about CreateFile,
-        // see the unmanaged MSDN reference library.
         [DllImport("kernel32.dll", SetLastError = true)]
         internal static extern SafeFileHandle CreateFile(
             string lpFileName,

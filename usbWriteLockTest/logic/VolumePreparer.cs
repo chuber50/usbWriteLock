@@ -39,7 +39,8 @@ namespace usbWriteLockTest.logic
                 }
                 else
                 {
-                    File.Create(_testMeta.preFileName);
+                    var tmpHdl = File.Create(_testMeta.preFileName);
+                    tmpHdl.Close();
                 }
             }
             catch (Exception e)

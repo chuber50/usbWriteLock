@@ -415,13 +415,11 @@ Return Value:
 		{
 			//http://www.osronline.com/showThread.cfm?link=79773
 			PFLT_IO_PARAMETER_BLOCK IopbPtr = Data->Iopb;
-			PFLT_PARAMETERS ParameterPtr = &IopbPtr->Parameters;
-			PIO_SECURITY_CONTEXT SecurityContextPtr = ParameterPtr->Create.SecurityContext;
+			const PFLT_PARAMETERS ParameterPtr = &IopbPtr->Parameters;
+			const PIO_SECURITY_CONTEXT SecurityContextPtr = ParameterPtr->Create.SecurityContext;
 
-			ACCESS_MASK desiredAccess = SecurityContextPtr->DesiredAccess;
-			ACCESS_MASK createDisposition = ParameterPtr->Create.Options;
-
-			//SecurityContextPtr->AccessState.
+			const ACCESS_MASK desiredAccess = SecurityContextPtr->DesiredAccess;
+			const ACCESS_MASK createDisposition = ParameterPtr->Create.Options;
 
 			const BOOLEAN writeOperation = ((desiredAccess & 
 				(FILE_WRITE_DATA | 
@@ -444,7 +442,9 @@ Return Value:
 					FILE_ADD_SUBDIRECTORY));
 
 			if (writeOperation || overwriteOperation) {
-				Data->IoStatus.Status = STATUS_ACCESS_DENIED; //STATUS_CANCELLED; 
+				//SecurityContextPtr->AccessState->PreviouslyGrantedAccess = 0;
+				//SecurityContextPtr->AccessState->RemainingDesiredAccess = 0;
+				Data->IoStatus.Status = STATUS_ACCESS_DENIED; //STATUS_CANCELLED; // STATUS_ACCESS_DENIED
 				Data->IoStatus.Information = 0;
 				DbgPrint("IRP Major: %u \n", Data->Iopb->MajorFunction);
 				DbgPrint("IRP Minor: %u \n", Data->Iopb->MinorFunction);

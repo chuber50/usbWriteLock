@@ -47,7 +47,7 @@ namespace usbWriteLockTest
             _hashWorker.ProgressChanged +=
                 hashWorker_ProgressChanged;
 
-            logAdd("Application initialized");
+            logAdd("Application initialized", false);
         }
 
         
@@ -57,13 +57,20 @@ namespace usbWriteLockTest
         //http://www.infinitec.de/post/2007/06/09/Displaying-progress-updates-when-hashing-large-files.aspx
         private void btnCheckSum1_Click(object sender, EventArgs e)
         {
-            if (!_hashWorker.IsBusy)
+            if (_deviceCollector.drives.Count > 0)
             {
-                lockInterface();
-                logAdd($"Started calculating hash.");
-                _hashWorker.RunWorkerAsync();
+                if (!_hashWorker.IsBusy)
+                {
+                    lockInterface();
+                    logAdd($"Started calculating hash.");
+                    _hashWorker.RunWorkerAsync();
+                }
             }
-            
+            else
+            {
+                okMsgBox("Hash calculation can only be executed with a disk selected in the 'USB Devices' grid.");
+            }
+
         }
 
         private void hashWorker_DoWork(object sender, DoWorkEventArgs e)
@@ -81,7 +88,7 @@ namespace usbWriteLockTest
                 e.Cancel = true;
             }
 
-            deviceHandler.UnlockVolumes();
+            deviceHandler.UnlockVolumes();            
         }
 
         private void hashWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -186,15 +193,24 @@ namespace usbWriteLockTest
 
         private void btnResetResults_Click(object sender, EventArgs e)
         {
-            _deviceCollector.drives.ForEach(d => d.hashes.Clear());
+            //_deviceCollector.drives.ForEach(d => d.hashes.Clear());
+            _deviceCollector.ClearHashes();
             if (grdDevices.CurrentRow != null) updateDetails(grdDevices.CurrentRow.Index);
         }
 
-        public void logAdd(string logMsg)
+        public void logAdd(string logMsg, bool printDevice = true)
         {
-            rtbLog.AppendText(Environment.NewLine + DateTime.Now.ToLocalTime() +
-                              $" {grdDevices.CurrentRow?.Cells[0].Value ?? ""} (SN {grdDevices.CurrentRow?.Cells[3].Value ?? ""}): "
-                              + logMsg + Environment.NewLine);
+            if (printDevice)
+            {
+                rtbLog.AppendText(Environment.NewLine + DateTime.Now.ToLocalTime() +
+                                  $" {grdDevices.CurrentRow?.Cells[0].Value ?? ""} (SN {grdDevices.CurrentRow?.Cells[3].Value ?? ""}): "
+                                  + logMsg + Environment.NewLine);
+            }
+            else
+            {
+                rtbLog.AppendText(Environment.NewLine + DateTime.Now.ToLocalTime() + ": " + logMsg + Environment.NewLine);
+            }
+            
             rtbLog.ScrollToCaret();
         }
 
@@ -264,33 +280,47 @@ namespace usbWriteLockTest
 
         private void btnRunTests_Click(object sender, EventArgs e)
         {
-            DialogResult result = yncMsgBox("This action could delete all contents on your drive! Continue?");
-            if (result == DialogResult.Yes)
+            if (_deviceCollector.drives.Count > 0)
             {
-                TestMeta testMeta = _deviceCollector.drives[grdDevices.CurrentRow.Index].getTestVolume();
-                if (testMeta.hasValidVolume)
+                DialogResult result = yncMsgBox("This action could delete all contents on your drive! Continue?");
+                if (result == DialogResult.Yes)
                 {
-                    WriteTester writeTester = new WriteTester(testMeta);
-                    logAdd(writeTester.test1_CreateFolder());
-                    logAdd(writeTester.test2_CreateFile());
-                    logAdd(writeTester.test3_OverwriteFile());
-                    logAdd(writeTester.test4_SetFileAttributes());
-                    logAdd(writeTester.test5_SetDirCreateTime());
-                    logAdd(writeTester.test6_DeleteFile());
-                    logAdd(writeTester.test7_DeleteFolder());
+                    TestMeta testMeta = _deviceCollector.drives[grdDevices.CurrentRow.Index].getTestVolume();
+                    if (testMeta.hasValidVolume)
+                    {
+                        WriteTester writeTester = new WriteTester(testMeta);
+                        logAdd(writeTester.test1_CreateFolder());
+                        logAdd(writeTester.test2_CreateFile());
+                        logAdd(writeTester.test3_OverwriteFile());
+                        logAdd(writeTester.test4_SetFileAttributes());
+                        logAdd(writeTester.test5_SetDirCreateTime());
+                        logAdd(writeTester.test6_DeleteFile());
+                        logAdd(writeTester.test7_DeleteFolder());
+                    }
                 }
+            }
+            else
+            {
+                okMsgBox("Tests can only be executed with a disk selected in the 'USB Devices' grid.");
             }
         }
 
         private void btnPrepare_Click(object sender, EventArgs e)
         {
-            DialogResult result = yncMsgBox("Write locking must be disabled when preparing the volume for testing! Continue?");
-            if (result == DialogResult.Yes) {
-                TestMeta testMeta = _deviceCollector.drives[grdDevices.CurrentRow.Index].getTestVolume();
-                VolumePreparer volumePreparer = new VolumePreparer(testMeta);
-                logAdd(volumePreparer.CreateFile());
-                logAdd(volumePreparer.CreateFolder());
+            if (_deviceCollector.drives.Count > 0) {
+                DialogResult result = yncMsgBox("Write locking must be disabled when preparing the volume for testing! Continue?");
+                if (result == DialogResult.Yes)
+                {
+                    TestMeta testMeta = _deviceCollector.drives[grdDevices.CurrentRow.Index].getTestVolume();
+                    VolumePreparer volumePreparer = new VolumePreparer(testMeta);
+                    logAdd(volumePreparer.CreateFile());
+                    logAdd(volumePreparer.CreateFolder());
+                }
+            } else
+            {
+                okMsgBox("Preparation can only be executed with a disk selected in the 'USB Devices' grid.");
             }
+            
         }
 
         private void okMsgBox(string text)

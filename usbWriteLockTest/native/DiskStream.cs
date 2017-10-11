@@ -83,8 +83,6 @@ namespace usbWriteLockTest.native
 
         public override bool CanSeek => true;
 
-
-
         public ulong LengthU => this.size;
 
         public override long Position
@@ -140,6 +138,7 @@ namespace usbWriteLockTest.native
         {
             throw new NotSupportedException("Setting the length is not supported with DiskStream objects.");
         }
+
         public override int Read(byte[] buffer, int offset, int count)
         {
             return (int)Read(buffer, (uint)offset, (uint)count);
@@ -156,10 +155,12 @@ namespace usbWriteLockTest.native
             }
             return n;
         }
+
         public override void Write(byte[] buffer, int offset, int count)
         {
             Write(buffer, (uint)offset, (uint)count);
         }
+
         public unsafe void Write(byte[] buffer, uint offset, uint count)
         {
             uint n = 0;

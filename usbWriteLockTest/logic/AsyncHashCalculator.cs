@@ -10,7 +10,7 @@ namespace usbWriteLockTest.logic
 {
     public class AsyncHashCalculator
     {
-        private readonly int _bufferSize = 4096;
+        private const int BufferSize = 4096;
         private readonly UsbDrive _usbDrive;
         private readonly HashAlgorithm _hashAlgorithm;
 
@@ -32,7 +32,7 @@ namespace usbWriteLockTest.logic
 
         public string computeHash()
         {
-            Debug.Assert(_usbDrive.volumes.TrueForAll(v => v.locked));
+            //Debug.Assert(_usbDrive.volumes.TrueForAll(v => v.locked));
 
             long totalBytesRead = 0;
 
@@ -41,7 +41,7 @@ namespace usbWriteLockTest.logic
             {
                 var size = stream.Length;
 
-                var readAheadBuffer = new byte[_bufferSize];
+                var readAheadBuffer = new byte[BufferSize];
                 var readAheadBytesRead = stream.Read(readAheadBuffer, 0, readAheadBuffer.Length);
 
                 totalBytesRead += readAheadBytesRead;
@@ -51,7 +51,7 @@ namespace usbWriteLockTest.logic
                     var bytesRead = readAheadBytesRead;
                     var buffer = readAheadBuffer;
 
-                    readAheadBuffer = new byte[_bufferSize];
+                    readAheadBuffer = new byte[BufferSize];
                     readAheadBytesRead = stream.Read(readAheadBuffer, 0, readAheadBuffer.Length);
                     totalBytesRead += readAheadBytesRead;
 
