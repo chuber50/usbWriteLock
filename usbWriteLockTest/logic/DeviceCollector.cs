@@ -10,7 +10,7 @@ namespace usbWriteLockTest.logic
 {
     class DeviceCollector
     {
-        public List<UsbDrive> drives = new List<UsbDrive>();
+        public BindingList<UsbDrive> drives = new BindingList<UsbDrive>();
 
         public DeviceCollector()
         {

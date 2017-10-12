@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
+using System.Text;
+using System.Windows.Forms;
 using usbWriteLockTest.data;
 
 namespace usbWriteLockTest.logic
@@ -8,6 +11,7 @@ namespace usbWriteLockTest.logic
     {
         private const string CMsgSuccess = "Success";
         private TestMeta _testMeta;
+        private string _consoleMsg = "";
 
         public WriteTester(TestMeta testMeta)
         {
@@ -35,7 +39,8 @@ namespace usbWriteLockTest.logic
             string path = _testMeta.getArbitraryFileName;
             try
             {
-                File.Create(path);
+                var file = File.Create(path);
+                file.Close();
             }
             catch (Exception e)
             {
@@ -128,6 +133,35 @@ namespace usbWriteLockTest.logic
                 msg = e.Message;
             }
             return $"Trying to delete precreated folder {_testMeta.preDirName}: {msg}";
+        }
+
+        public string test7_ShellScript()
+        {
+
+            Process p = new Process();
+            _consoleMsg = string.Empty;
+
+            p.StartInfo.UseShellExecute = false;
+            p.StartInfo.RedirectStandardOutput = true;
+            p.StartInfo.RedirectStandardError = true;
+            p.StartInfo.FileName = Application.StartupPath + "\\external_tests.bat";
+            p.StartInfo.WorkingDirectory = _testMeta.volumePath;
+            p.StartInfo.StandardOutputEncoding = Encoding.GetEncoding(850);
+            p.StartInfo.Arguments = String.Format("\"{0}\" \"{1}\" \"{2}\"", _testMeta.volumePath.Replace(@"\", string.Empty), _testMeta.preDirName, _testMeta.preFileName);
+
+            p.OutputDataReceived += (sender, args) => mergeMsg(args.Data);
+            p.ErrorDataReceived += (sender, args) => mergeMsg(args.Data);
+            p.Start();
+            p.BeginOutputReadLine();
+            p.BeginErrorReadLine();
+            p.WaitForExit(); 
+
+            return $"Running tests batch-file: {_consoleMsg}";
+        }
+
+        void mergeMsg(string output)
+        {
+            _consoleMsg += output + Environment.NewLine;
         }
 
         //TODO: FORMAT

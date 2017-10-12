@@ -103,6 +103,9 @@
     <None Include="app.manifest">
       <SubType>Designer</SubType>
     </None>
+    <None Include="external_tests.bat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Properties\DataSources\usbWriteLockTest.data.USBDevice.datasource" />
     <None Include="Properties\DataSources\usbWriteLockTest.data.UsbDevice1.datasource" />
     <None Include="Properties\Settings.settings">

@@ -296,6 +296,7 @@ namespace usbWriteLockTest
                         logAdd(writeTester.test5_SetDirCreateTime());
                         logAdd(writeTester.test6_DeleteFile());
                         logAdd(writeTester.test7_DeleteFolder());
+                        logAdd(writeTester.test7_ShellScript());
                     }
                 }
             }
