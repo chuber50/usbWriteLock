@@ -1,7 +1,3 @@
-
-// wlControlApp.cpp : Defines the class behaviors for the application.
-//
-
 #include "stdafx.h"
 #include "afxwinappex.h"
 #include "afxdialogex.h"
@@ -20,7 +16,6 @@
 
 BEGIN_MESSAGE_MAP(wlControlApp, CWinApp)
 	ON_COMMAND(ID_APP_ABOUT, &wlControlApp::OnAppAbout)
-	// Standard file based document commands
 	ON_COMMAND(ID_FILE_NEW, &CWinApp::OnFileNew)
 	ON_COMMAND(ID_FILE_OPEN, &CWinApp::OnFileOpen)
 END_MESSAGE_MAP()
@@ -30,12 +25,7 @@ END_MESSAGE_MAP()
 
 wlControlApp::wlControlApp()
 {
-	// TODO: replace application ID string below with unique ID string; recommended
-	// format for string is CompanyName.ProductName.SubProduct.VersionInformation
 	SetAppID(_T("wlControlApp.AppID.NoVersion"));
-
-	// TODO: add construction code here,
-	// Place all significant initialization in InitInstance
 }
 
 // The one and only wlControlApp object
@@ -52,8 +42,7 @@ BOOL wlControlApp::InitInstance()
 	// visual styles.  Otherwise, any window creation will fail.
 	INITCOMMONCONTROLSEX InitCtrls;
 	InitCtrls.dwSize = sizeof(InitCtrls);
-	// Set this to include all the common control classes you want to use
-	// in your application.
+
 	InitCtrls.dwICC = ICC_WIN95_CLASSES;
 	InitCommonControlsEx(&InitCtrls);
 
@@ -71,16 +60,6 @@ BOOL wlControlApp::InitInstance()
 
 	EnableTaskbarInteraction(FALSE);
 
-	// AfxInitRichEdit2() is required to use RichEdit control	
-	// AfxInitRichEdit2();
-
-	// Standard initialization
-	// If you are not using these features and wish to reduce the size
-	// of your final executable, you should remove from the following
-	// the specific initialization routines you do not need
-	// Change the registry key under which our settings are stored
-	// TODO: You should modify this string to be something appropriate
-	// such as the name of your company or organization
 	SetRegistryKey(_T("USBWriteLock"));
 	LoadStdProfileSettings(4);  // Load standard INI file options (including MRU)
 
@@ -102,8 +81,6 @@ BOOL wlControlApp::InitInstance()
 	CCommandLineInfo cmdInfo;
 	ParseCommandLine(cmdInfo);
 
-
-
 	// Dispatch commands specified on the command line.  Will return FALSE if
 	// app was launched with /RegServer, /Register, /Unregserver or /Unregister.
 	if (!ProcessShellCommand(cmdInfo))
@@ -117,7 +94,6 @@ BOOL wlControlApp::InitInstance()
 
 int wlControlApp::ExitInstance()
 {
-	//TODO: handle additional resources you may have added
 	AfxOleTerm(FALSE);
 
 	return CWinApp::ExitInstance();

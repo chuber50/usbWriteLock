@@ -2,10 +2,6 @@
 
 Copyright (c) 1989-2002  Microsoft Corporation
 
-Module Name:
-
-    mspyKern.h
-
 Abstract:
     Header file which contains the structures, type definitions,
     constants, global variables and function prototypes that are

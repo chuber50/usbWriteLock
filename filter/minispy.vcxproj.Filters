@@ -19,9 +19,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="mspyLib.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="RegistrationData.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -30,7 +27,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="minispy.rc">
+    <ResourceCompile Include="usbwl.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>

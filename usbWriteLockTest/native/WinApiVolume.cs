@@ -8,18 +8,11 @@ namespace usbWriteLockTest.native
 {
     public class WinApiVolume : IDisposable
     {
-
-        /* ---------------------------------------------------------
-         * private members
-         * ------------------------------------------------------ */
         private SafeFileHandle _hFile = null;
 
         private string _sFileName = "";
         private bool _fDisposed;
 
-        /* ---------------------------------------------------------
-         * properties
-         * ------------------------------------------------------ */
         public bool isOpen
         {
             get { return (_hFile != null); }
@@ -60,19 +53,11 @@ namespace usbWriteLockTest.native
             }
         }
 
-        /* ---------------------------------------------------------
-         * Constructors
-         * ------------------------------------------------------ */
-
         public WinApiVolume(string sFileName)
         {
             fileName = sFileName;
             open();
         }
-
-        /* ---------------------------------------------------------
-         * Open/Close
-         * ------------------------------------------------------ */
 
         public void open()
         {
@@ -142,10 +127,6 @@ namespace usbWriteLockTest.native
             return result;
         }
 
-        /* ---------------------------------------------------------
-         * Move file pointer
-         * ------------------------------------------------------ */
-
         public void moveFilePointer(int cbToMove)
         {
             moveFilePointer(cbToMove, EMoveMethod.FileCurrent);
@@ -172,10 +153,6 @@ namespace usbWriteLockTest.native
             set { moveFilePointer(value); }
         }
 
-        /* ---------------------------------------------------------
-         * Read and Write
-         * ------------------------------------------------------ */
-
         public uint read(byte[] buffer, uint cbToRead)
         {
             // returns bytes read
@@ -196,9 +173,6 @@ namespace usbWriteLockTest.native
             return cbThatWereWritten;
         }
 
-        /* ---------------------------------------------------------
-         * IDisposable Interface
-         * ------------------------------------------------------ */
         public void Dispose()
         {
             dispose(true);

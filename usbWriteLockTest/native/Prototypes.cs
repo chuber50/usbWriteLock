@@ -5,6 +5,7 @@ using usbWriteLockTest.native.constant;
 
 namespace usbWriteLockTest.native
 {
+    // prototypes collected from http://www.pinvoke.net/
     class Prototypes
     {
         public const uint InvalidHandleValue = 0xFFFFFFFF;

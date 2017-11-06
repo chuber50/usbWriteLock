@@ -190,11 +190,6 @@ Determine if our filter is attached to this volume
 		PWCHAR filtername = PWCHAR(PUCHAR(data) + data->FilterNameBufferOffset);
 		filtername[data->FilterNameLength / sizeof(WCHAR)] = L'\0';
 
-
-		//
-		//  Bump the instance count when we find a match
-		//
-
 		if (_wcsicmp(filtername, USBWL_NAME) == 0) {
 			instanceCount++;
 		}
@@ -216,12 +211,12 @@ Determine if our filter is attached to this volume
 BOOL FilterConnection::isUsbDevice(std::wstring volumeAccessPath)
 {
 	HANDLE deviceHandle = CreateFileW(volumeAccessPath.c_str(), 
-		0, // no access to the drive
-		FILE_SHARE_READ | // share mode
-		FILE_SHARE_WRITE, NULL,             // default security attributes
-		OPEN_EXISTING,    // disposition
-		0,                // file attributes
-		nullptr);         // do not copy file attributes
+		0,
+		FILE_SHARE_READ | 
+		FILE_SHARE_WRITE, NULL, 
+		OPEN_EXISTING,
+		0,       
+		nullptr);  
 
 	STORAGE_PROPERTY_QUERY query;
 	memset(&query, 0, sizeof(query));

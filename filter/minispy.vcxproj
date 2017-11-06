@@ -82,6 +82,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetName>usbwl</TargetName>
+    <IncludePath>$(IncludePath);$(ProjectDir);C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Include</IncludePath>
+    <LibraryPath>$(DDK_LibraryPath_DDKPlatform);$(LibraryPath);C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Lib</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <TargetName>minispy</TargetName>
@@ -181,7 +183,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="usbwl.c" />
-    <ClCompile Include="mspyLib.c" />
     <ClCompile Include="RegistrationData.c" />
     <ResourceCompile Include="usbwl.rc" />
   </ItemGroup>

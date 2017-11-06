@@ -27,12 +27,6 @@ namespace usbWriteLockTest.native
             this.desiredAccess = desiredAccess;
             this.size = size;
 
-            // if desiredAccess is Write or Read/Write
-            //   find volumes on this disk
-            //   lock the volumes using FSCTL_LOCK_VOLUME
-            //     unlock the volumes on Close() or in destructor
-
-
             this.fileHandle = this.openFile(diskID, desiredAccess);
         }
 
@@ -119,10 +113,9 @@ namespace usbWriteLockTest.native
 
         public override void Flush()
         {
-            // not required, since FILE_FLAG_WRITE_THROUGH and FILE_FLAG_NO_BUFFERING are used
-            //if (!Unmanaged.FlushFileBuffers(this.fileHandle))
-            //    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+            // not required
         }
+
         public override void Close()
         {
             if (this.fileHandle != null)
