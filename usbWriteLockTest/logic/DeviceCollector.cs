@@ -10,7 +10,7 @@ namespace usbWriteLockTest.logic
 {
     class DeviceCollector
     {
-        public BindingList<UsbDrive> drives = new BindingList<UsbDrive>();
+        public List<UsbDrive> drives = new List<UsbDrive>();
 
         public DeviceCollector()
         {
@@ -20,18 +20,18 @@ namespace usbWriteLockTest.logic
 
         public void repollDevices()
         {
-            foreach (UsbDrive drive in drives)
-            {
-                drive.upToDate = false;
-                foreach (LogicalVolume vol in drive.volumes)
-                {
-                    vol.isUpToDate = false;
-                }
-            }
+            //foreach (UsbDrive drive in drives)
+            //{
+            //    drive.upToDate = false;
+            //    foreach (LogicalVolume vol in drive.volumes)
+            //    {
+            //        vol.isUpToDate = false;
+            //    }
+            //}
 
             //BindingList does not support
-            //drives.ForEach(d => { d.upToDate = false; });
-            //drives.ForEach(d => d.volumes.ForEach(v => { v.isUpToDate = false; }));
+            drives.ForEach(d => { d.upToDate = false; });
+            drives.ForEach(d => d.volumes.ForEach(v => { v.isUpToDate = false; }));
 
             List<DriveInfo> driveInfos = DriveInfo.GetDrives().ToList();
 
@@ -122,15 +122,15 @@ namespace usbWriteLockTest.logic
                 }
             }
 
-            foreach(UsbDrive drive in drives)
-            {
-                if (!drive.upToDate)
-                {
-                    //https://stackoverflow.com/questions/142003/cross-thread-operation-not-valid-control-accessed-from-a-thread-other-than-the
-                    drives.Remove(drive);
-                }
-            }
-            //drives.RemoveAll(d => !d.upToDate);
+            //foreach(UsbDrive drive in drives)
+            //{
+            //    if (!drive.upToDate)
+            //    {
+            //        //https://stackoverflow.com/questions/142003/cross-thread-operation-not-valid-control-accessed-from-a-thread-other-than-the
+            //        drives.Remove(drive);
+            //    }
+            //}
+            drives.RemoveAll(d => !d.upToDate);
         }
 
         public void ClearHashes()

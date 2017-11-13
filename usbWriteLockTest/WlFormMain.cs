@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows.Forms;
 using usbWriteLockTest.data;
 using usbWriteLockTest.logic;
@@ -11,6 +12,7 @@ namespace usbWriteLockTest
         private PnpEventWatcher _watcher;
         private DeviceCollector _deviceCollector;
         private BackgroundWorker _hashWorker;
+        private BindingList<UsbDrive> _dataSource;
 
         public WlFormMain()
         {
@@ -22,6 +24,7 @@ namespace usbWriteLockTest
             try
             {
                 _deviceCollector = new DeviceCollector();
+                _dataSource = new BindingList<UsbDrive>(_deviceCollector.drives);
             }
             catch (UnauthorizedAccessException)
             {
@@ -29,8 +32,8 @@ namespace usbWriteLockTest
                 Application.Exit();
             }
             
-            grdDevices.DataSource = _deviceCollector.drives;
-            if (_deviceCollector.drives.Count > 0)
+            grdDevices.DataSource = _dataSource;
+            if (_dataSource.Count > 0)
             {
                 updateDetails(0);
             }
@@ -57,7 +60,7 @@ namespace usbWriteLockTest
         //http://www.infinitec.de/post/2007/06/09/Displaying-progress-updates-when-hashing-large-files.aspx
         private void btnCheckSum1_Click(object sender, EventArgs e)
         {
-            if (_deviceCollector.drives.Count > 0)
+            if (_dataSource.Count > 0)
             {
                 if (!_hashWorker.IsBusy)
                 {
@@ -77,10 +80,10 @@ namespace usbWriteLockTest
         {
             BackgroundWorker worker = sender as BackgroundWorker;
 
-            DeviceHandler deviceHandler = new DeviceHandler(_deviceCollector.drives[grdDevices.CurrentCell.RowIndex]);
+            DeviceHandler deviceHandler = new DeviceHandler(_dataSource[grdDevices.CurrentCell.RowIndex]);
             deviceHandler.LockVolumes();
 
-            AsyncHashCalculator hashCalculator = new AsyncHashCalculator(worker, _deviceCollector.drives[grdDevices.CurrentCell.RowIndex]);
+            AsyncHashCalculator hashCalculator = new AsyncHashCalculator(worker, _dataSource[grdDevices.CurrentCell.RowIndex]);
             e.Result = hashCalculator.computeHash();
 
             if (worker != null && worker.CancellationPending)
@@ -106,7 +109,7 @@ namespace usbWriteLockTest
                 logAdd($"Hashworker successfully computed hash: {(string)e.Result}");
             }
 
-            updateForm();
+            updateDeviceGrid();
 
             unlockInterface(); 
         }
@@ -123,23 +126,23 @@ namespace usbWriteLockTest
 
         private void updateDetails(int rowIndex)
         {
-            if (rowIndex >= 0 && _deviceCollector.drives.Count >= rowIndex)
+            if (rowIndex >= 0 && _dataSource.Count >= rowIndex)
             {
-                txtDriveName.Text = _deviceCollector.drives[rowIndex].driveName;
-                txtModel.Text = _deviceCollector.drives[rowIndex].model;
-                txtTotalSize.Text = _deviceCollector.drives[rowIndex].driveSize.ToString();
-                txtSectorsTrack.Text = _deviceCollector.drives[rowIndex].sectorsPerTrack.ToString();
-                txtTracksCyl.Text = _deviceCollector.drives[rowIndex].tracksPerCylinder.ToString();
-                txtBytesSector.Text = _deviceCollector.drives[rowIndex].bytesPerSector.ToString();
-                txtTotalCyl.Text = _deviceCollector.drives[rowIndex].totalCylinders.ToString();
-                txtTotalHeads.Text = _deviceCollector.drives[rowIndex].totalHeads.ToString();
-                txtTotalTracks.Text = _deviceCollector.drives[rowIndex].totalTracks.ToString();
-                txtTotalSectors.Text = _deviceCollector.drives[rowIndex].totalSectors.ToString();
+                txtDriveName.Text = _dataSource[rowIndex].driveName;
+                txtModel.Text = _dataSource[rowIndex].model;
+                txtTotalSize.Text = _dataSource[rowIndex].driveSize.ToString();
+                txtSectorsTrack.Text = _dataSource[rowIndex].sectorsPerTrack.ToString();
+                txtTracksCyl.Text = _dataSource[rowIndex].tracksPerCylinder.ToString();
+                txtBytesSector.Text = _dataSource[rowIndex].bytesPerSector.ToString();
+                txtTotalCyl.Text = _dataSource[rowIndex].totalCylinders.ToString();
+                txtTotalHeads.Text = _dataSource[rowIndex].totalHeads.ToString();
+                txtTotalTracks.Text = _dataSource[rowIndex].totalTracks.ToString();
+                txtTotalSectors.Text = _dataSource[rowIndex].totalSectors.ToString();
 
                 grdVolumes.DataSource = null;
-                grdVolumes.DataSource = _deviceCollector.drives[rowIndex].volumes;
+                grdVolumes.DataSource = _dataSource[rowIndex].volumes;
                 grdHashes.DataSource = null;
-                grdHashes.DataSource = _deviceCollector.drives[rowIndex].hashes;
+                grdHashes.DataSource = _dataSource[rowIndex].hashes;
 
             }
         }
@@ -157,8 +160,6 @@ namespace usbWriteLockTest
 
         private void updateForm()
         {
-            grdDevices.DataSource = null;
-            grdDevices.DataSource = _deviceCollector.drives;
             if (grdDevices.CurrentRow != null)
             {
                 updateDetails(grdDevices.CurrentRow.Index);
@@ -168,15 +169,15 @@ namespace usbWriteLockTest
         private void updateDeviceGrid()
         {
             _deviceCollector.repollDevices();
-            if (this.grdDevices.InvokeRequired)
-            {
-                StringArgReturningVoidDelegate d = updateForm;
-                this.Invoke(d, new object[] { });
-            }
-            else
-            {
-                updateForm();
-            }
+            _dataSource = new BindingList<UsbDrive>(_deviceCollector.drives);
+
+            DataGridView dg = grdDevices;
+            Action d = () => {
+                dg.DataSource = _dataSource;
+                updateForm(); 
+            };
+            dg.Invoke(d);
+            
         }
 
         private void grdHashes_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
@@ -280,12 +281,12 @@ namespace usbWriteLockTest
 
         private void btnRunTests_Click(object sender, EventArgs e)
         {
-            if (_deviceCollector.drives.Count > 0)
+            if (_dataSource.Count > 0)
             {
                 DialogResult result = yncMsgBox("This action could delete all contents on your drive! Continue?");
                 if (result == DialogResult.Yes)
                 {
-                    TestMeta testMeta = _deviceCollector.drives[grdDevices.CurrentRow.Index].getTestVolume();
+                    TestMeta testMeta = _dataSource[grdDevices.CurrentRow.Index].getTestVolume();
                     if (testMeta.hasValidVolume)
                     {
                         WriteTester writeTester = new WriteTester(testMeta);
@@ -308,11 +309,11 @@ namespace usbWriteLockTest
 
         private void btnPrepare_Click(object sender, EventArgs e)
         {
-            if (_deviceCollector.drives.Count > 0) {
+            if (_dataSource.Count > 0) {
                 DialogResult result = yncMsgBox("Write locking must be disabled when preparing the volume for testing! Continue?");
                 if (result == DialogResult.Yes)
                 {
-                    TestMeta testMeta = _deviceCollector.drives[grdDevices.CurrentRow.Index].getTestVolume();
+                    TestMeta testMeta = _dataSource[grdDevices.CurrentRow.Index].getTestVolume();
                     VolumePreparer volumePreparer = new VolumePreparer(testMeta);
                     logAdd(volumePreparer.CreateFile());
                     logAdd(volumePreparer.CreateFolder());
