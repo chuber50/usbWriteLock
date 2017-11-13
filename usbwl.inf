@@ -92,20 +92,20 @@ USBWl.exe = 1,,
 
 [Strings]
 ProviderString          = "Christian Huber"
-ServiceDescription      = "USBWl mini-filter driver"
+ServiceDescription      = "USBWl write protection mini-filter driver"
 ServiceName             = "USBWl"
 DriverName              = "USBWl"
 UserAppName             = "wlControlApp"
 DiskId1                 = "USBWl Device Installation Disk"
 
 ;Instances specific information.
-DefaultInstance         = "USBWl - Top Instance"
-Instance1.Name          = "USBWl - Middle Instance"
+DefaultInstance         = "USBWl write protection - Top Instance"
+Instance1.Name          = "USBWl write protection - Middle Instance"
 Instance1.Altitude      = "370000"
 Instance1.Flags         = 0x1          ; Suppress automatic attachments
-Instance2.Name          = "USBWl - Bottom Instance"
+Instance2.Name          = "USBWl write protection - Bottom Instance"
 Instance2.Altitude      = "361000"
 Instance2.Flags         = 0x1          ; Suppress automatic attachments
-Instance3.Name          = "USBWl - Top Instance"
+Instance3.Name          = "USBWl write protection - Top Instance"
 Instance3.Altitude      = "385100"
 Instance3.Flags         = 0x1          ; Suppress automatic attachments

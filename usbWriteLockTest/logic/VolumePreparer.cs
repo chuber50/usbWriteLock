@@ -25,7 +25,7 @@ namespace usbWriteLockTest.logic
             {
                 msg = e.Message;
             }
-            return $"Trying to create folder {_testMeta.preDirName}: {msg}";
+            return $"Preparation: Trying to create folder {_testMeta.preDirName}: {msg}";
         }
 
         public string CreateFile()
@@ -47,7 +47,7 @@ namespace usbWriteLockTest.logic
             {
                 msg = e.Message;
             }
-            return $"Trying to create file {_testMeta.preDirName}: {msg}";
+            return $"Preparation: Trying to create file {_testMeta.preDirName}: {msg}";
         }
     }
 }

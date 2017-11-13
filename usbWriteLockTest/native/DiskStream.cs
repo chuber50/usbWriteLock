@@ -137,12 +137,12 @@ namespace usbWriteLockTest.native
             return (int)Read(buffer, (uint)offset, (uint)count);
         }
 
-        public unsafe uint Read(byte[] buffer, uint offset, uint count)
+        public unsafe uint Read(byte[] buffer, uint offset, uint nNumberOfBytesToRead )
         {
             uint n = 0;
             fixed (byte* p = buffer)
             {
-                if (!ReadFile(this.fileHandle, p + offset, count, &n, IntPtr.Zero))
+                if (!ReadFile(this.fileHandle, p + offset, nNumberOfBytesToRead , &n, IntPtr.Zero))
                     return 0;
                 //Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
             }

@@ -137,24 +137,24 @@ namespace usbWriteLockTest.logic
 
         public string test7_ShellScript()
         {
+            // commented out for security reasons
+            //Process p = new Process();
+            //_consoleMsg = string.Empty;
 
-            Process p = new Process();
-            _consoleMsg = string.Empty;
+            //p.StartInfo.UseShellExecute = false;
+            //p.StartInfo.RedirectStandardOutput = true;
+            //p.StartInfo.RedirectStandardError = true;
+            //p.StartInfo.FileName = Application.StartupPath + "\\external_tests.bat";
+            //p.StartInfo.WorkingDirectory = _testMeta.volumePath;
+            //p.StartInfo.StandardOutputEncoding = Encoding.GetEncoding(850);
+            //p.StartInfo.Arguments = String.Format("\"{0}\" \"{1}\" \"{2}\"", _testMeta.volumePath.Replace(@"\", string.Empty), _testMeta.preDirName, _testMeta.preFileName);
 
-            p.StartInfo.UseShellExecute = false;
-            p.StartInfo.RedirectStandardOutput = true;
-            p.StartInfo.RedirectStandardError = true;
-            p.StartInfo.FileName = Application.StartupPath + "\\external_tests.bat";
-            p.StartInfo.WorkingDirectory = _testMeta.volumePath;
-            p.StartInfo.StandardOutputEncoding = Encoding.GetEncoding(850);
-            p.StartInfo.Arguments = String.Format("\"{0}\" \"{1}\" \"{2}\"", _testMeta.volumePath.Replace(@"\", string.Empty), _testMeta.preDirName, _testMeta.preFileName);
-
-            p.OutputDataReceived += (sender, args) => mergeMsg(args.Data);
-            p.ErrorDataReceived += (sender, args) => mergeMsg(args.Data);
-            p.Start();
-            p.BeginOutputReadLine();
-            p.BeginErrorReadLine();
-            p.WaitForExit(); 
+            //p.OutputDataReceived += (sender, args) => mergeMsg(args.Data);
+            //p.ErrorDataReceived += (sender, args) => mergeMsg(args.Data);
+            //p.Start();
+            //p.BeginOutputReadLine();
+            //p.BeginErrorReadLine();
+            //p.WaitForExit(); 
 
             return $"Running tests batch-file: {_consoleMsg}";
         }
@@ -164,6 +164,5 @@ namespace usbWriteLockTest.logic
             _consoleMsg += output + Environment.NewLine;
         }
 
-        //TODO: FORMAT
     }
 }
