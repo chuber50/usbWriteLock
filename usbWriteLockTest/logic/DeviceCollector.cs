@@ -16,8 +16,8 @@ namespace usbWriteLockTest.logic
         {
             repollDevices();
         }
-        
 
+        // queries the WMI for devices and populates the drives list
         public void repollDevices()
         {
             //foreach (UsbDrive drive in drives)

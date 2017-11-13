@@ -12,7 +12,7 @@ namespace usbWriteLockTest.native
 
         public const uint InvalidSetFilePointer = 0xFFFFFFFF;
 
-        [DllImport("kernel32.dll", SetLastError = true)]
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         internal static extern SafeFileHandle CreateFile(
             string lpFileName,
             EDesiredAccess dwDesiredAccess,
@@ -79,7 +79,7 @@ namespace usbWriteLockTest.native
             SafeFileHandle hFile,
             IntPtr pFileSizeHigh);
 
-        [DllImport("Kernel32.dll", SetLastError = false, CharSet = CharSet.Auto)]
+        [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         public static extern bool DeviceIoControl(
             SafeFileHandle hDevice,
             EioControlCode ioControlCode,

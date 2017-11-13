@@ -117,6 +117,7 @@ namespace usbWriteLockTest
         private void hashWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             this.progressBar.Value = e.ProgressPercentage <= 100 ? e.ProgressPercentage : 100;
+            this.lblPercentage.Text = e.ProgressPercentage <= 100 ? e.ProgressPercentage.ToString() + " %" : "100 %" ;
         }
 
         private void grdDevices_CellClick(object sender, DataGridViewCellEventArgs e)
@@ -189,6 +190,7 @@ namespace usbWriteLockTest
         {
             progressBar.Value = 0;
             pictWorking.Visible = false;
+            this.lblPercentage.Visible = false;
             _hashWorker.CancelAsync();
         }
 
@@ -221,6 +223,7 @@ namespace usbWriteLockTest
             btnCheckSum1.Enabled = false;
             pictWorking.Visible = true;
             pictWorking.Enabled = true;
+            this.lblPercentage.Visible = true;
             grdDevices.Enabled = false;
             grdVolumes.Enabled = false;
             grdHashes.Enabled = false;
@@ -236,6 +239,7 @@ namespace usbWriteLockTest
             btnCheckSum1.Enabled = true;
             pictWorking.Visible = false;
             pictWorking.Enabled = false;
+            lblPercentage.Visible = false;
             grdDevices.Enabled = true;
             grdVolumes.Enabled = true;
             grdHashes.Enabled = true;

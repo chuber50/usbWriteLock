@@ -66,6 +66,7 @@
             this.btnCancelOp = new System.Windows.Forms.Button();
             this.btnResetResults = new System.Windows.Forms.Button();
             this.btnRunTests = new System.Windows.Forms.Button();
+            this.lblPercentage = new System.Windows.Forms.Label();
             this.grpDrives.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.grdDevices)).BeginInit();
             this.grpVolumes.SuspendLayout();
@@ -396,12 +397,13 @@
             // 
             this.progressBar.Location = new System.Drawing.Point(7, 19);
             this.progressBar.Name = "progressBar";
-            this.progressBar.Size = new System.Drawing.Size(450, 17);
+            this.progressBar.Size = new System.Drawing.Size(418, 17);
             this.progressBar.Step = 1;
             this.progressBar.TabIndex = 4;
             // 
             // grpOperations
             // 
+            this.grpOperations.Controls.Add(this.lblPercentage);
             this.grpOperations.Controls.Add(this.btnPrepare);
             this.grpOperations.Controls.Add(this.rtbLog);
             this.grpOperations.Controls.Add(this.pictWorking);
@@ -480,6 +482,14 @@
             this.btnRunTests.UseVisualStyleBackColor = true;
             this.btnRunTests.Click += new System.EventHandler(this.btnRunTests_Click);
             // 
+            // lblPercentage
+            // 
+            this.lblPercentage.AutoSize = true;
+            this.lblPercentage.Location = new System.Drawing.Point(431, 21);
+            this.lblPercentage.Name = "lblPercentage";
+            this.lblPercentage.Size = new System.Drawing.Size(0, 13);
+            this.lblPercentage.TabIndex = 12;
+            // 
             // WlFormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -504,6 +514,7 @@
             this.grpBoxHash1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.grdHashes)).EndInit();
             this.grpOperations.ResumeLayout(false);
+            this.grpOperations.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictWorking)).EndInit();
             this.ResumeLayout(false);
 
@@ -550,6 +561,7 @@
         private System.Windows.Forms.PictureBox pictWorking;
         private System.Windows.Forms.RichTextBox rtbLog;
         private System.Windows.Forms.Button btnPrepare;
+        private System.Windows.Forms.Label lblPercentage;
     }
 }
 
