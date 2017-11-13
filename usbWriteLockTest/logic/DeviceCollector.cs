@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -137,7 +138,8 @@ namespace usbWriteLockTest.logic
         {
             foreach (UsbDrive drive in drives)
             {
-                drive.hashes.Clear();
+                drive.firstHash = null;
+                drive.secondHash = null;
             }
         }
     }  

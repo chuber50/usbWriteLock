@@ -1,5 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using usbWriteLockTest.data;
@@ -13,6 +15,7 @@ namespace usbWriteLockTest
         private DeviceCollector _deviceCollector;
         private BackgroundWorker _hashWorker;
         private BindingList<UsbDrive> _dataSource;
+        private ApplicationState state;
 
         public WlFormMain()
         {
@@ -31,7 +34,7 @@ namespace usbWriteLockTest
                 okMsgBox("Write locking must be unloaded when starting the test application.");
                 Application.Exit();
             }
-            
+
             grdDevices.DataSource = _dataSource;
             if (_dataSource.Count > 0)
             {
@@ -51,11 +54,9 @@ namespace usbWriteLockTest
                 hashWorker_ProgressChanged;
 
             logAdd("Application initialized", false);
+
+            nextState(ApplicationState.PrepareForTests);
         }
-
-        
-
-        delegate void StringArgReturningVoidDelegate();
 
         //http://www.infinitec.de/post/2007/06/09/Displaying-progress-updates-when-hashing-large-files.aspx
         private void btnCheckSum1_Click(object sender, EventArgs e)
@@ -64,7 +65,16 @@ namespace usbWriteLockTest
             {
                 if (!_hashWorker.IsBusy)
                 {
-                    lockInterface();
+                    Debug.Assert(state == ApplicationState.FirstChecksum || state == ApplicationState.SecondChecksum);
+                    if (state == ApplicationState.FirstChecksum)
+                    {
+                        nextState(ApplicationState.FirstHashCalculation);
+                    }
+                    else
+                    {
+                        nextState(ApplicationState.SecondHashCalculation);
+                    }
+
                     logAdd($"Started calculating hash.");
                     _hashWorker.RunWorkerAsync();
                 }
@@ -83,7 +93,8 @@ namespace usbWriteLockTest
             DeviceHandler deviceHandler = new DeviceHandler(_dataSource[grdDevices.CurrentCell.RowIndex]);
             deviceHandler.LockVolumes();
 
-            AsyncHashCalculator hashCalculator = new AsyncHashCalculator(worker, _dataSource[grdDevices.CurrentCell.RowIndex]);
+            AsyncHashCalculator hashCalculator =
+                new AsyncHashCalculator(worker, _dataSource[grdDevices.CurrentCell.RowIndex]);
             e.Result = hashCalculator.computeHash();
 
             if (worker != null && worker.CancellationPending)
@@ -91,7 +102,7 @@ namespace usbWriteLockTest
                 e.Cancel = true;
             }
 
-            deviceHandler.UnlockVolumes();            
+            deviceHandler.UnlockVolumes();
         }
 
         private void hashWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -99,25 +110,44 @@ namespace usbWriteLockTest
             if (e.Error != null)
             {
                 logAdd($"Hashworker: {e.Error.Message}");
+                nextState(ApplicationState.CleanupDevice);
             }
             else if (e.Cancelled)
             {
                 logAdd("Hashworker has been cancelled by user.");
+                nextState(ApplicationState.CleanupDevice);
             }
             else
             {
-                logAdd($"Hashworker successfully computed hash: {(string)e.Result}");
+                logAdd($"Hashworker successfully computed hash: {(string) e.Result}");
+                Debug.Assert(state == ApplicationState.FirstHashCalculation || state == ApplicationState.SecondHashCalculation);
+                if (state == ApplicationState.FirstHashCalculation)
+                {
+                    nextState(ApplicationState.RunTests);
+                }
+                else
+                {
+                    if (_dataSource[grdDevices.CurrentCell.RowIndex].hashesAreEqual())
+                    {
+                        txtFirstHash.BackColor = Color.DarkSeaGreen;
+                        txtSecondHash.BackColor = Color.DarkSeaGreen;
+                    }
+                    else
+                    {
+                        txtFirstHash.BackColor = Color.LightCoral;
+                        txtSecondHash.BackColor = Color.LightCoral;
+                    }
+                    nextState(ApplicationState.CleanupDevice);
+                }
             }
 
             updateDeviceGrid();
-
-            unlockInterface(); 
         }
 
         private void hashWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             this.progressBar.Value = e.ProgressPercentage <= 100 ? e.ProgressPercentage : 100;
-            this.lblPercentage.Text = e.ProgressPercentage <= 100 ? e.ProgressPercentage.ToString() + " %" : "100 %" ;
+            this.lblPercentage.Text = e.ProgressPercentage <= 100 ? e.ProgressPercentage.ToString() + " %" : "100 %";
         }
 
         private void grdDevices_CellClick(object sender, DataGridViewCellEventArgs e)
@@ -132,19 +162,15 @@ namespace usbWriteLockTest
                 txtDriveName.Text = _dataSource[rowIndex].driveName;
                 txtModel.Text = _dataSource[rowIndex].model;
                 txtTotalSize.Text = _dataSource[rowIndex].driveSize.ToString();
-                txtSectorsTrack.Text = _dataSource[rowIndex].sectorsPerTrack.ToString();
-                txtTracksCyl.Text = _dataSource[rowIndex].tracksPerCylinder.ToString();
-                txtBytesSector.Text = _dataSource[rowIndex].bytesPerSector.ToString();
-                txtTotalCyl.Text = _dataSource[rowIndex].totalCylinders.ToString();
                 txtTotalHeads.Text = _dataSource[rowIndex].totalHeads.ToString();
                 txtTotalTracks.Text = _dataSource[rowIndex].totalTracks.ToString();
                 txtTotalSectors.Text = _dataSource[rowIndex].totalSectors.ToString();
 
                 grdVolumes.DataSource = null;
                 grdVolumes.DataSource = _dataSource[rowIndex].volumes;
-                grdHashes.DataSource = null;
-                grdHashes.DataSource = _dataSource[rowIndex].hashes;
 
+                txtFirstHash.Text = _dataSource[rowIndex].firstHash;
+                txtSecondHash.Text = _dataSource[rowIndex].secondHash;
             }
         }
 
@@ -164,7 +190,7 @@ namespace usbWriteLockTest
             if (grdDevices.CurrentRow != null)
             {
                 updateDetails(grdDevices.CurrentRow.Index);
-            } 
+            }
         }
 
         private void updateDeviceGrid()
@@ -173,25 +199,19 @@ namespace usbWriteLockTest
             _dataSource = new BindingList<UsbDrive>(_deviceCollector.drives);
 
             DataGridView dg = grdDevices;
-            Action d = () => {
+            Action d = () =>
+            {
                 dg.DataSource = _dataSource;
-                updateForm(); 
+                updateForm();
             };
             dg.Invoke(d);
-            
-        }
 
-        private void grdHashes_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
-        {
-            grdHashes.Columns[0].Width = 40;
         }
 
         private void btnCancelOp_Click(object sender, EventArgs e)
         {
-            progressBar.Value = 0;
-            pictWorking.Visible = false;
-            this.lblPercentage.Visible = false;
             _hashWorker.CancelAsync();
+            nextState(ApplicationState.CleanupDevice);
         }
 
         private void btnResetResults_Click(object sender, EventArgs e)
@@ -211,41 +231,157 @@ namespace usbWriteLockTest
             }
             else
             {
-                rtbLog.AppendText(Environment.NewLine + DateTime.Now.ToLocalTime() + ": " + logMsg + Environment.NewLine);
+                rtbLog.AppendText(
+                    Environment.NewLine + DateTime.Now.ToLocalTime() + ": " + logMsg + Environment.NewLine);
             }
-            
+
             rtbLog.ScrollToCaret();
         }
 
-        private void lockInterface()
+        private void nextState(ApplicationState nextState)
         {
-            btnCancelOp.Enabled = true;
-            btnCheckSum1.Enabled = false;
-            pictWorking.Visible = true;
-            pictWorking.Enabled = true;
-            this.lblPercentage.Visible = true;
-            grdDevices.Enabled = false;
-            grdVolumes.Enabled = false;
-            grdHashes.Enabled = false;
-            btnRunTests.Enabled = false;
-            btnResetResults.Enabled = false;
-            btnPrepare.Enabled = false;
-        }
-
-        private void unlockInterface()
-        {
-            progressBar.Value = 0;
-            btnCancelOp.Enabled = false;
-            btnCheckSum1.Enabled = true;
-            pictWorking.Visible = false;
-            pictWorking.Enabled = false;
-            lblPercentage.Visible = false;
-            grdDevices.Enabled = true;
-            grdVolumes.Enabled = true;
-            grdHashes.Enabled = true;
-            btnRunTests.Enabled = true;
-            btnResetResults.Enabled = true;
-            btnPrepare.Enabled = true;
+            state = nextState;
+            switch (nextState)
+            {
+                case ApplicationState.PrepareForTests:
+                    progressBar.Value = 0;
+                    btnCancelOp.Enabled = false;
+                    btnCheckSum1.Enabled = false;
+                    pictWorking.Visible = false;
+                    pictWorking.Enabled = false;
+                    lblPercentage.Visible = false;
+                    grdDevices.Enabled = true;
+                    grdVolumes.Enabled = true;
+                    btnRunTests.Enabled = false;
+                    btnResetResults.Enabled = false;
+                    btnPrepare.Enabled = true;
+                    btnWriteEnabled.Enabled = false;
+                    btnWriteProtectionDisabled.Enabled = false;
+                    btnSecondHash.Enabled = false;
+                    btnCleanup.Enabled = false;
+                    txtFirstHash.Text = String.Empty;
+                    txtSecondHash.Text = String.Empty;
+                    txtFirstHash.BackColor = DefaultBackColor;
+                    txtSecondHash.BackColor = DefaultBackColor;
+                    break;
+                case ApplicationState.WriteProtectionEnabled:
+                    progressBar.Value = 0;
+                    btnCancelOp.Enabled = false;
+                    btnCheckSum1.Enabled = false;
+                    pictWorking.Visible = false;
+                    pictWorking.Enabled = false;
+                    lblPercentage.Visible = false;
+                    grdDevices.Enabled = false;
+                    grdVolumes.Enabled = false;
+                    btnRunTests.Enabled = false;
+                    btnResetResults.Enabled = false;
+                    btnPrepare.Enabled = false;
+                    btnWriteEnabled.Enabled = true;
+                    btnWriteProtectionDisabled.Enabled = false;
+                    btnSecondHash.Enabled = false;
+                    btnCleanup.Enabled = false;
+                    break;
+                case ApplicationState.FirstChecksum:
+                    progressBar.Value = 0;
+                    btnCancelOp.Enabled = false;
+                    btnCheckSum1.Enabled = true;
+                    pictWorking.Visible = false;
+                    pictWorking.Enabled = false;
+                    lblPercentage.Visible = false;
+                    grdDevices.Enabled = false;
+                    grdVolumes.Enabled = false;
+                    btnRunTests.Enabled = false;
+                    btnResetResults.Enabled = false;
+                    btnPrepare.Enabled = false;
+                    btnWriteEnabled.Enabled = false;
+                    btnWriteProtectionDisabled.Enabled = false;
+                    btnSecondHash.Enabled = false;
+                    btnCleanup.Enabled = false;
+                    break;
+                case ApplicationState.FirstHashCalculation:
+                    btnCancelOp.Enabled = true;
+                    btnCheckSum1.Enabled = false;
+                    pictWorking.Visible = true;
+                    pictWorking.Enabled = true;
+                    this.lblPercentage.Visible = true;
+                    grdDevices.Enabled = false;
+                    grdVolumes.Enabled = false;
+                    btnRunTests.Enabled = false;
+                    btnResetResults.Enabled = false;
+                    btnPrepare.Enabled = false;
+                    btnWriteEnabled.Enabled = false;
+                    btnWriteProtectionDisabled.Enabled = false;
+                    btnSecondHash.Enabled = false;
+                    btnCleanup.Enabled = false;
+                    break;
+                case ApplicationState.RunTests:
+                    progressBar.Value = 0;
+                    btnCancelOp.Enabled = false;
+                    btnCheckSum1.Enabled = false;
+                    pictWorking.Visible = false;
+                    pictWorking.Enabled = false;
+                    lblPercentage.Visible = false;
+                    grdDevices.Enabled = false;
+                    grdVolumes.Enabled = false;
+                    btnRunTests.Enabled = true;
+                    btnResetResults.Enabled = false;
+                    btnPrepare.Enabled = false;
+                    btnWriteEnabled.Enabled = false;
+                    btnWriteProtectionDisabled.Enabled = false;
+                    btnSecondHash.Enabled = false;
+                    btnCleanup.Enabled = false;
+                    break;
+                case ApplicationState.SecondChecksum:
+                    progressBar.Value = 0;
+                    btnCancelOp.Enabled = false;
+                    btnCheckSum1.Enabled = false;
+                    pictWorking.Visible = false;
+                    pictWorking.Enabled = false;
+                    lblPercentage.Visible = false;
+                    grdDevices.Enabled = false;
+                    grdVolumes.Enabled = false;
+                    btnRunTests.Enabled = false;
+                    btnResetResults.Enabled = false;
+                    btnPrepare.Enabled = false;
+                    btnWriteEnabled.Enabled = false;
+                    btnWriteProtectionDisabled.Enabled = false;
+                    btnSecondHash.Enabled = true;
+                    btnCleanup.Enabled = false;
+                    break;
+                case ApplicationState.SecondHashCalculation:
+                    btnCancelOp.Enabled = true;
+                    btnCheckSum1.Enabled = false;
+                    pictWorking.Visible = true;
+                    pictWorking.Enabled = true;
+                    this.lblPercentage.Visible = true;
+                    grdDevices.Enabled = false;
+                    grdVolumes.Enabled = false;
+                    btnRunTests.Enabled = false;
+                    btnResetResults.Enabled = false;
+                    btnPrepare.Enabled = false;
+                    btnWriteEnabled.Enabled = false;
+                    btnWriteProtectionDisabled.Enabled = false;
+                    btnSecondHash.Enabled = false;
+                    btnCleanup.Enabled = false;
+                    break;
+                case ApplicationState.CleanupDevice:
+                    progressBar.Value = 0;
+                    btnCancelOp.Enabled = false;
+                    btnCheckSum1.Enabled = false;
+                    pictWorking.Visible = false;
+                    pictWorking.Enabled = false;
+                    lblPercentage.Visible = false;
+                    grdDevices.Enabled = false;
+                    grdVolumes.Enabled = false;
+                    btnRunTests.Enabled = false;
+                    btnResetResults.Enabled = false;
+                    btnPrepare.Enabled = false;
+                    btnWriteEnabled.Enabled = false;
+                    btnWriteProtectionDisabled.Enabled = false;
+                    btnSecondHash.Enabled = false;
+                    btnCleanup.Enabled = true;
+                    break;
+            }
         }
 
         //https://social.msdn.microsoft.com/Forums/windows/en-US/62f5b477-5311-4de5-bc18-fbd29bbfc9e2/setting-an-image-column-in-a-datagrid-view-based-on-a-value-in-the-database-c?forum=winformsdatacontrols
@@ -303,6 +439,7 @@ namespace usbWriteLockTest
                         logAdd(writeTester.test7_DeleteFolder());
                         logAdd(writeTester.test7_ShellScript());
                     }
+                    nextState(ApplicationState.SecondChecksum);
                 }
             }
             else
@@ -313,20 +450,26 @@ namespace usbWriteLockTest
 
         private void btnPrepare_Click(object sender, EventArgs e)
         {
-            if (_dataSource.Count > 0) {
-                DialogResult result = yncMsgBox("Write locking must be disabled when preparing the volume for testing! Continue?");
+            if (_dataSource.Count > 0)
+            {
+                DialogResult result =
+                    yncMsgBox("Write locking must be disabled when preparing the volume for testing! Continue?");
                 if (result == DialogResult.Yes)
                 {
+                    logAdd("Preparation process started.");
                     TestMeta testMeta = _dataSource[grdDevices.CurrentRow.Index].getTestVolume();
                     VolumePreparer volumePreparer = new VolumePreparer(testMeta);
                     logAdd(volumePreparer.CreateFile());
                     logAdd(volumePreparer.CreateFolder());
+                    logAdd("Preparation process finished.");
+                    nextState(ApplicationState.WriteProtectionEnabled);
                 }
-            } else
+            }
+            else
             {
                 okMsgBox("Preparation can only be executed with a disk selected in the 'USB Devices' grid.");
             }
-            
+
         }
 
         private void okMsgBox(string text)
@@ -339,8 +482,25 @@ namespace usbWriteLockTest
 
         private DialogResult yncMsgBox(string text)
         {
-            return MessageBox.Show(text, @"USB Writelock Test Application", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            return MessageBox.Show(text, @"USB Writelock Test Application", MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
         }
 
+        private void btnWriteEnabled_Click(object sender, EventArgs e)
+        {
+            nextState(ApplicationState.FirstChecksum);
+        }
+
+        private void btnSecondHash_Click(object sender, EventArgs e)
+        {
+            btnCheckSum1_Click(sender, e);
+        }
+
+        private void btnCleanup_Click(object sender, EventArgs e)
+        {
+            _deviceCollector.ClearHashes();
+            if (grdDevices.CurrentRow != null) updateDetails(grdDevices.CurrentRow.Index);
+            nextState(ApplicationState.PrepareForTests);
+        }
     }
 }

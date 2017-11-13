@@ -8,7 +8,7 @@ namespace usbWriteLockTest.data
     public class UsbDrive : IEquatable<UsbDrive>
     {
         public List<LogicalVolume> volumes = new List<LogicalVolume>();
-        public List<Hash> hashes = new List<Hash>();
+        //public List<Hash> hashes = new List<Hash>();
         public TestMeta testMeta;
 
         public UsbDrive(string driveName, string model, ulong driveSize)
@@ -20,7 +20,16 @@ namespace usbWriteLockTest.data
 
         public void AddHash(string hashCode)
         {
-            hashes.Add(new Hash(hashes.Count + 1, hashCode));
+            if (firstHash == null)
+            {
+                //hashes.Add(new Hash(hashes.Count + 1, hashCode));
+                firstHash = hashCode;
+                
+            }
+            else
+            {
+                secondHash = hashCode;
+            }
         }
 
         [DisplayName("Drive Name")]
@@ -59,6 +68,11 @@ namespace usbWriteLockTest.data
         [Browsable(false)]
         public bool upToDate { get; set; }
 
+        [Browsable(false)]
+        public string firstHash { get; set; }
+
+        public string secondHash { get; set; }
+
         public bool Equals(UsbDrive other)
         {
             return String.Compare(driveName, other.driveName, StringComparison.Ordinal) == 0 &&
@@ -77,6 +91,11 @@ namespace usbWriteLockTest.data
             }
 
             return null;
+        }
+
+        public bool hashesAreEqual()
+        {
+            return firstHash.Equals(secondHash);
         }
     }
 }

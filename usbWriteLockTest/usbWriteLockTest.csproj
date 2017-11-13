@@ -61,6 +61,7 @@
     <Compile Include="data\Hash.cs" />
     <Compile Include="data\LogicalVolume.cs" />
     <Compile Include="data\TestMeta.cs" />
+    <Compile Include="logic\ApplicationState.cs" />
     <Compile Include="logic\AsyncHashCalculator.cs" />
     <Compile Include="logic\DeviceHandler.cs" />
     <Compile Include="data\UsbDrive.cs" />
