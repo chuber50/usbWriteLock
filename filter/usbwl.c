@@ -415,13 +415,13 @@ Return Value:
 		{
 			//http://www.osronline.com/showThread.cfm?link=79773
 			PFLT_IO_PARAMETER_BLOCK IopbPtr = Data->Iopb;
-			const PFLT_PARAMETERS ParameterPtr = &IopbPtr->Parameters;
-			const PIO_SECURITY_CONTEXT SecurityContextPtr = ParameterPtr->Create.SecurityContext;
+			PFLT_PARAMETERS ParameterPtr = &IopbPtr->Parameters;
+			PIO_SECURITY_CONTEXT SecurityContextPtr = ParameterPtr->Create.SecurityContext;
 
-			const ACCESS_MASK desiredAccess = SecurityContextPtr->DesiredAccess;
-			const ACCESS_MASK createDisposition = ParameterPtr->Create.Options;
+			ACCESS_MASK desiredAccess = SecurityContextPtr->DesiredAccess;
+			ACCESS_MASK createDisposition = ParameterPtr->Create.Options;
 
-			const BOOLEAN writeOperation = ((desiredAccess & 
+			BOOLEAN writeOperation = ((desiredAccess & 
 				(FILE_WRITE_DATA | 
 					FILE_WRITE_ATTRIBUTES | 
 					FILE_WRITE_EA | 
@@ -433,7 +433,7 @@ Return Value:
 					FILE_ADD_SUBDIRECTORY)) ||
 				(Data->Iopb->Parameters.Create.Options & FILE_DELETE_ON_CLOSE));
 
-			const BOOLEAN overwriteOperation = (createDisposition & 
+			BOOLEAN overwriteOperation = (createDisposition & 
 				(FILE_SUPERSEDE | 
 					FILE_CREATE | 
 					FILE_OVERWRITE | 

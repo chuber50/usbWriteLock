@@ -21,16 +21,6 @@ namespace usbWriteLockTest.logic
         // queries the WMI for devices and populates the drives list
         public void repollDevices()
         {
-            //foreach (UsbDrive drive in drives)
-            //{
-            //    drive.upToDate = false;
-            //    foreach (LogicalVolume vol in drive.volumes)
-            //    {
-            //        vol.isUpToDate = false;
-            //    }
-            //}
-
-            //BindingList does not support
             drives.ForEach(d => { d.upToDate = false; });
             drives.ForEach(d => d.volumes.ForEach(v => { v.isUpToDate = false; }));
 
@@ -77,18 +67,19 @@ namespace usbWriteLockTest.logic
                             select n).FirstOrDefault();
                         if (volumeInfo != null)
                         {
-                            LogicalVolume volume = new LogicalVolume((string)c.GetPropertyValue("DeviceID"))
-                            {
-                                rootDirectory = volumeInfo.RootDirectory,
-                                driveFormat =  volumeInfo.DriveFormat,
-                                driveType = volumeInfo.DriveType,
-                                isReady = volumeInfo.IsReady,
-                                totalFreeSpace = volumeInfo.TotalFreeSpace,
-                                totalSize = volumeInfo.TotalSize,
-                                volumeLabel = volumeInfo.VolumeLabel,
-                                name = volumeInfo.Name,
-                                isUpToDate = true
-                            };
+                            LogicalVolume volume =
+                                new LogicalVolume((string) c.GetPropertyValue("DeviceID"))
+                                {
+                                    driveFormat = volumeInfo.DriveFormat,
+                                    rootDirectory = volumeInfo.RootDirectory,
+                                    driveType = volumeInfo.DriveType,
+                                    totalFreeSpace = volumeInfo.TotalFreeSpace,
+                                    totalSize = volumeInfo.TotalSize,
+                                    isReady = volumeInfo.IsReady,
+                                    volumeLabel = volumeInfo.VolumeLabel,
+                                    name = volumeInfo.Name,
+                                    isUpToDate = true
+                                };
 
                             if ((index = newDrive.volumes.IndexOf(volume)) != -1)
                             {
@@ -123,14 +114,6 @@ namespace usbWriteLockTest.logic
                 }
             }
 
-            //foreach(UsbDrive drive in drives)
-            //{
-            //    if (!drive.upToDate)
-            //    {
-            //        //https://stackoverflow.com/questions/142003/cross-thread-operation-not-valid-control-accessed-from-a-thread-other-than-the
-            //        drives.Remove(drive);
-            //    }
-            //}
             drives.RemoveAll(d => !d.upToDate);
         }
 

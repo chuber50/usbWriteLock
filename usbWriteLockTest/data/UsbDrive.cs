@@ -71,6 +71,7 @@ namespace usbWriteLockTest.data
         [Browsable(false)]
         public string firstHash { get; set; }
 
+        [Browsable(false)]
         public string secondHash { get; set; }
 
         public bool Equals(UsbDrive other)

@@ -30,5 +30,18 @@ namespace usbWriteLockTest.data
         {
             return GuidPrefix + Guid.NewGuid().ToString("D");
         }
+
+        public void Clear()
+        {
+            try
+            {
+                Directory.Delete(preDirName, true);
+                File.Delete(preFileName);
+            }
+            catch (Exception)
+            {
+                // this will not succeed if the write blocking mechanism is still applied
+            }
+        }
     }
 }

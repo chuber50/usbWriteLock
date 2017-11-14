@@ -69,7 +69,7 @@ namespace usbWriteLockTest.native
             if (_hFile.IsInvalid)
             {
                 _hFile = null;
-                throwLastWin32Err();
+                //throwLastWin32Err();
             }
             _fDisposed = false;
 

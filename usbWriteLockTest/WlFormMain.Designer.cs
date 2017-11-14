@@ -108,6 +108,7 @@
             this.grdDevices.TabIndex = 0;
             this.grdDevices.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.grdDevices_CellClick);
             this.grdDevices.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.grdDevices_CellFormatting);
+            this.grdDevices.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.grdDevices_DataError);
             // 
             // btnCheckSum1
             // 

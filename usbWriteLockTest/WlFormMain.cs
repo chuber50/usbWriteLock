@@ -15,7 +15,8 @@ namespace usbWriteLockTest
         private DeviceCollector _deviceCollector;
         private BackgroundWorker _hashWorker;
         private BindingList<UsbDrive> _dataSource;
-        private ApplicationState state;
+        private ApplicationState _state;
+        private UsbDrive _actDrive;
 
         public WlFormMain()
         {
@@ -36,8 +37,9 @@ namespace usbWriteLockTest
             }
 
             grdDevices.DataSource = _dataSource;
-            if (_dataSource.Count > 0)
+            if (_dataSource != null && _dataSource.Count > 0)
             {
+                _actDrive = _dataSource[grdDevices.CurrentCell.RowIndex];
                 updateDetails(0);
             }
 
@@ -65,8 +67,8 @@ namespace usbWriteLockTest
             {
                 if (!_hashWorker.IsBusy)
                 {
-                    Debug.Assert(state == ApplicationState.FirstChecksum || state == ApplicationState.SecondChecksum);
-                    if (state == ApplicationState.FirstChecksum)
+                    Debug.Assert(_state == ApplicationState.FirstChecksum || _state == ApplicationState.SecondChecksum);
+                    if (_state == ApplicationState.FirstChecksum)
                     {
                         nextState(ApplicationState.FirstHashCalculation);
                     }
@@ -120,13 +122,17 @@ namespace usbWriteLockTest
             else
             {
                 logAdd($"Hashworker successfully computed hash: {(string) e.Result}");
-                Debug.Assert(state == ApplicationState.FirstHashCalculation || state == ApplicationState.SecondHashCalculation);
-                if (state == ApplicationState.FirstHashCalculation)
+                Debug.Assert(_state == ApplicationState.FirstHashCalculation || _state == ApplicationState.SecondHashCalculation);
+                if (_state == ApplicationState.FirstHashCalculation)
                 {
+                    txtFirstHash.Text = _actDrive.firstHash;
                     nextState(ApplicationState.RunTests);
                 }
                 else
                 {
+                    txtFirstHash.Text = _actDrive.firstHash;
+                    txtSecondHash.Text = _actDrive.secondHash;
+
                     if (_dataSource[grdDevices.CurrentCell.RowIndex].hashesAreEqual())
                     {
                         txtFirstHash.BackColor = Color.DarkSeaGreen;
@@ -141,7 +147,7 @@ namespace usbWriteLockTest
                 }
             }
 
-            updateDeviceGrid();
+            //updateDeviceGrid();
         }
 
         private void hashWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -152,6 +158,7 @@ namespace usbWriteLockTest
 
         private void grdDevices_CellClick(object sender, DataGridViewCellEventArgs e)
         {
+            _actDrive = _dataSource[grdDevices.CurrentCell.RowIndex];
             updateDetails(e.RowIndex);
         }
 
@@ -190,6 +197,7 @@ namespace usbWriteLockTest
             if (grdDevices.CurrentRow != null)
             {
                 updateDetails(grdDevices.CurrentRow.Index);
+                _actDrive = _dataSource[grdDevices.CurrentCell.RowIndex];
             }
         }
 
@@ -197,10 +205,17 @@ namespace usbWriteLockTest
         {
             _deviceCollector.repollDevices();
             _dataSource = new BindingList<UsbDrive>(_deviceCollector.drives);
+            
 
             DataGridView dg = grdDevices;
             Action d = () =>
             {
+                if (!_dataSource.Contains(_actDrive))
+                {
+                    btnCleanup.PerformClick();
+                    nextState(ApplicationState.PrepareForTests);
+                }
+
                 dg.DataSource = _dataSource;
                 updateForm();
             };
@@ -214,12 +229,6 @@ namespace usbWriteLockTest
             nextState(ApplicationState.CleanupDevice);
         }
 
-        private void btnResetResults_Click(object sender, EventArgs e)
-        {
-            //_deviceCollector.drives.ForEach(d => d.hashes.Clear());
-            _deviceCollector.ClearHashes();
-            if (grdDevices.CurrentRow != null) updateDetails(grdDevices.CurrentRow.Index);
-        }
 
         public void logAdd(string logMsg, bool printDevice = true)
         {
@@ -240,7 +249,7 @@ namespace usbWriteLockTest
 
         private void nextState(ApplicationState nextState)
         {
-            state = nextState;
+            _state = nextState;
             switch (nextState)
             {
                 case ApplicationState.PrepareForTests:
@@ -250,10 +259,19 @@ namespace usbWriteLockTest
                     pictWorking.Visible = false;
                     pictWorking.Enabled = false;
                     lblPercentage.Visible = false;
-                    grdDevices.Enabled = true;
+                    try
+                    {
+                        // causes null reference with datasource when device removed 
+                        // while hashworker running
+                        grdDevices.Enabled = true;
+                    }
+                    catch(Exception e)
+                    {
+                        logAdd(e.ToString());
+                    }
+
                     grdVolumes.Enabled = true;
                     btnRunTests.Enabled = false;
-                    btnResetResults.Enabled = false;
                     btnPrepare.Enabled = true;
                     btnWriteEnabled.Enabled = false;
                     btnWriteProtectionDisabled.Enabled = false;
@@ -266,7 +284,7 @@ namespace usbWriteLockTest
                     break;
                 case ApplicationState.WriteProtectionEnabled:
                     progressBar.Value = 0;
-                    btnCancelOp.Enabled = false;
+                    btnCancelOp.Enabled = true;
                     btnCheckSum1.Enabled = false;
                     pictWorking.Visible = false;
                     pictWorking.Enabled = false;
@@ -274,7 +292,6 @@ namespace usbWriteLockTest
                     grdDevices.Enabled = false;
                     grdVolumes.Enabled = false;
                     btnRunTests.Enabled = false;
-                    btnResetResults.Enabled = false;
                     btnPrepare.Enabled = false;
                     btnWriteEnabled.Enabled = true;
                     btnWriteProtectionDisabled.Enabled = false;
@@ -283,7 +300,7 @@ namespace usbWriteLockTest
                     break;
                 case ApplicationState.FirstChecksum:
                     progressBar.Value = 0;
-                    btnCancelOp.Enabled = false;
+                    btnCancelOp.Enabled = true;
                     btnCheckSum1.Enabled = true;
                     pictWorking.Visible = false;
                     pictWorking.Enabled = false;
@@ -291,7 +308,6 @@ namespace usbWriteLockTest
                     grdDevices.Enabled = false;
                     grdVolumes.Enabled = false;
                     btnRunTests.Enabled = false;
-                    btnResetResults.Enabled = false;
                     btnPrepare.Enabled = false;
                     btnWriteEnabled.Enabled = false;
                     btnWriteProtectionDisabled.Enabled = false;
@@ -307,7 +323,6 @@ namespace usbWriteLockTest
                     grdDevices.Enabled = false;
                     grdVolumes.Enabled = false;
                     btnRunTests.Enabled = false;
-                    btnResetResults.Enabled = false;
                     btnPrepare.Enabled = false;
                     btnWriteEnabled.Enabled = false;
                     btnWriteProtectionDisabled.Enabled = false;
@@ -316,7 +331,7 @@ namespace usbWriteLockTest
                     break;
                 case ApplicationState.RunTests:
                     progressBar.Value = 0;
-                    btnCancelOp.Enabled = false;
+                    btnCancelOp.Enabled = true;
                     btnCheckSum1.Enabled = false;
                     pictWorking.Visible = false;
                     pictWorking.Enabled = false;
@@ -324,7 +339,6 @@ namespace usbWriteLockTest
                     grdDevices.Enabled = false;
                     grdVolumes.Enabled = false;
                     btnRunTests.Enabled = true;
-                    btnResetResults.Enabled = false;
                     btnPrepare.Enabled = false;
                     btnWriteEnabled.Enabled = false;
                     btnWriteProtectionDisabled.Enabled = false;
@@ -333,7 +347,7 @@ namespace usbWriteLockTest
                     break;
                 case ApplicationState.SecondChecksum:
                     progressBar.Value = 0;
-                    btnCancelOp.Enabled = false;
+                    btnCancelOp.Enabled = true;
                     btnCheckSum1.Enabled = false;
                     pictWorking.Visible = false;
                     pictWorking.Enabled = false;
@@ -341,7 +355,6 @@ namespace usbWriteLockTest
                     grdDevices.Enabled = false;
                     grdVolumes.Enabled = false;
                     btnRunTests.Enabled = false;
-                    btnResetResults.Enabled = false;
                     btnPrepare.Enabled = false;
                     btnWriteEnabled.Enabled = false;
                     btnWriteProtectionDisabled.Enabled = false;
@@ -357,7 +370,6 @@ namespace usbWriteLockTest
                     grdDevices.Enabled = false;
                     grdVolumes.Enabled = false;
                     btnRunTests.Enabled = false;
-                    btnResetResults.Enabled = false;
                     btnPrepare.Enabled = false;
                     btnWriteEnabled.Enabled = false;
                     btnWriteProtectionDisabled.Enabled = false;
@@ -374,7 +386,6 @@ namespace usbWriteLockTest
                     grdDevices.Enabled = false;
                     grdVolumes.Enabled = false;
                     btnRunTests.Enabled = false;
-                    btnResetResults.Enabled = false;
                     btnPrepare.Enabled = false;
                     btnWriteEnabled.Enabled = false;
                     btnWriteProtectionDisabled.Enabled = false;
@@ -499,8 +510,22 @@ namespace usbWriteLockTest
         private void btnCleanup_Click(object sender, EventArgs e)
         {
             _deviceCollector.ClearHashes();
+            if (_actDrive != null)
+            {
+                logAdd("Cleaning up preparation files.");
+                _actDrive.testMeta.Clear();
+                _actDrive.testMeta = null;
+            }
+
             if (grdDevices.CurrentRow != null) updateDetails(grdDevices.CurrentRow.Index);
             nextState(ApplicationState.PrepareForTests);
+        }
+
+        private void grdDevices_DataError(object sender, DataGridViewDataErrorEventArgs e)
+        {
+            okMsgBox("The device was removed. Application will be set to initial state.");
+            e.ThrowException = false;
+            btnCleanup.PerformClick();
         }
     }
 }
