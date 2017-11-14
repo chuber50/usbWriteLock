@@ -13,12 +13,12 @@ namespace usbWriteLockTest.logic
 
         public void LockVolumes()
         {
-            //_usbDrive.volumes.ForEach(vol => vol.Lock());
+            _usbDrive.volumes.ForEach(vol => vol.Lock());
         }
 
         public void UnlockVolumes()
         {
-            //_usbDrive.volumes.ForEach(vol => vol.Unlock());
+            _usbDrive.volumes.ForEach(vol => vol.Unlock());
         }
 
         public void DismountVolumes()

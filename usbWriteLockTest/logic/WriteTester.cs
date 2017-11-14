@@ -93,7 +93,7 @@ namespace usbWriteLockTest.logic
             return $"Trying to write a line into precreated file {_testMeta.preFileName}: {msg}";
         }
 
-        public string test5_SetDirCreateTime()
+        public string test55_SetDirCreateTime()
         {
             string msg = CMsgSuccess;
             try
@@ -121,6 +121,20 @@ namespace usbWriteLockTest.logic
             return $"Trying to delete precreated file {_testMeta.preFileName}: {msg}";
         }
 
+        public string test65_HardLink()
+        {
+            string msg = CMsgSuccess;
+            try
+            {
+                native.Prototypes.CreateHardLink(_testMeta.preDirName + "2", _testMeta.preDirName, IntPtr.Zero);
+            }
+            catch (Exception e)
+            {
+                msg = e.Message;
+            }
+            return $"Trying to create hardlink to precreated folder {_testMeta.preDirName + "2"}: {msg}";
+        }
+
         public string test7_DeleteFolder()
         {
             string msg = CMsgSuccess;
@@ -135,7 +149,7 @@ namespace usbWriteLockTest.logic
             return $"Trying to delete precreated folder {_testMeta.preDirName}: {msg}";
         }
 
-        public string test7_ShellScript()
+        public string test8_ShellScript()
         {
             // commented out for security reasons
             //Process p = new Process();

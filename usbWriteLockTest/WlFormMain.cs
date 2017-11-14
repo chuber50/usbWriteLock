@@ -445,10 +445,12 @@ namespace usbWriteLockTest
                         logAdd(writeTester.test2_CreateFile());
                         logAdd(writeTester.test3_OverwriteFile());
                         logAdd(writeTester.test4_SetFileAttributes());
-                        logAdd(writeTester.test5_SetDirCreateTime());
+                        logAdd(writeTester.test5_WriteToFile());
+                        logAdd(writeTester.test55_SetDirCreateTime());
                         logAdd(writeTester.test6_DeleteFile());
                         logAdd(writeTester.test7_DeleteFolder());
-                        logAdd(writeTester.test7_ShellScript());
+                        logAdd(writeTester.test65_HardLink());
+                        logAdd(writeTester.test8_ShellScript());
                     }
                     nextState(ApplicationState.SecondChecksum);
                 }
