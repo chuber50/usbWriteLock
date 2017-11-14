@@ -229,6 +229,98 @@ namespace usbWriteLockTest
             nextState(ApplicationState.CleanupDevice);
         }
 
+        private void btnRunTests_Click(object sender, EventArgs e)
+        {
+            if (_dataSource.Count > 0)
+            {
+                DialogResult result = yncMsgBox("This action could delete all contents on your drive! Continue?");
+                if (result == DialogResult.Yes)
+                {
+                    TestMeta testMeta = _dataSource[grdDevices.CurrentRow.Index].getTestVolume();
+                    if (testMeta.hasValidVolume)
+                    {
+                        WriteTester writeTester = new WriteTester(testMeta);
+                        logAdd(writeTester.test1_CreateFolder());
+                        logAdd(writeTester.test2_CreateFile());
+                        logAdd(writeTester.test3_OverwriteFile());
+                        logAdd(writeTester.test4_SetFileAttributes());
+                        logAdd(writeTester.test5_WriteToFile());
+                        logAdd(writeTester.test55_SetDirCreateTime());
+                        logAdd(writeTester.test6_DeleteFile());
+                        logAdd(writeTester.test7_DeleteFolder());
+                        logAdd(writeTester.test65_HardLink());
+                        logAdd(writeTester.test8_ShellScript());
+                    }
+                    nextState(ApplicationState.SecondChecksum);
+                }
+            }
+            else
+            {
+                okMsgBox("Tests can only be executed with a disk selected in the 'USB Devices' grid.");
+            }
+        }
+
+        private void btnPrepare_Click(object sender, EventArgs e)
+        {
+            if (_dataSource.Count > 0)
+            {
+                DialogResult result =
+                    yncMsgBox("Write locking must be disabled when preparing the volume for testing! Continue?");
+                if (result == DialogResult.Yes)
+                {
+                    logAdd("Preparation process started.");
+                    TestMeta testMeta = _dataSource[grdDevices.CurrentRow.Index].getTestVolume();
+                    VolumePreparer volumePreparer = new VolumePreparer(testMeta);
+                    logAdd(volumePreparer.CreateFile());
+                    logAdd(volumePreparer.CreateFolder());
+                    logAdd("Preparation process finished.");
+                    nextState(ApplicationState.WriteProtectionEnabled);
+                }
+            }
+            else
+            {
+                okMsgBox("Preparation can only be executed with a disk selected in the 'USB Devices' grid.");
+            }
+        }
+
+        private void btnWriteEnabled_Click(object sender, EventArgs e)
+        {
+            nextState(ApplicationState.FirstChecksum);
+        }
+
+        private void btnSecondHash_Click(object sender, EventArgs e)
+        {
+            btnCheckSum1_Click(sender, e);
+        }
+
+        private void btnCleanup_Click(object sender, EventArgs e)
+        {
+            _deviceCollector.ClearHashes();
+            if (_actDrive != null)
+            {
+                logAdd("Cleaning up preparation files.");
+                _actDrive.testMeta.Clear();
+                _actDrive.testMeta = null;
+            }
+
+            if (grdDevices.CurrentRow != null) updateDetails(grdDevices.CurrentRow.Index);
+            nextState(ApplicationState.PrepareForTests);
+        }
+
+        private void okMsgBox(string text)
+        {
+            MessageBox.Show(text,
+                @"USB Writelock Test Application",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Exclamation);
+        }
+
+        private DialogResult yncMsgBox(string text)
+        {
+            return MessageBox.Show(text, @"USB Writelock Test Application", MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+        }
+
 
         public void logAdd(string logMsg, bool printDevice = true)
         {
@@ -245,6 +337,13 @@ namespace usbWriteLockTest
             }
 
             rtbLog.ScrollToCaret();
+        }
+
+        private void grdDevices_DataError(object sender, DataGridViewDataErrorEventArgs e)
+        {
+            okMsgBox("The device was removed. Application will be set to initial state.");
+            e.ThrowException = false;
+            btnCleanup.PerformClick();
         }
 
         private void nextState(ApplicationState nextState)
@@ -265,7 +364,7 @@ namespace usbWriteLockTest
                         // while hashworker running
                         grdDevices.Enabled = true;
                     }
-                    catch(Exception e)
+                    catch (Exception e)
                     {
                         logAdd(e.ToString());
                     }
@@ -428,106 +527,6 @@ namespace usbWriteLockTest
                 }
             }
 
-        }
-
-        private void btnRunTests_Click(object sender, EventArgs e)
-        {
-            if (_dataSource.Count > 0)
-            {
-                DialogResult result = yncMsgBox("This action could delete all contents on your drive! Continue?");
-                if (result == DialogResult.Yes)
-                {
-                    TestMeta testMeta = _dataSource[grdDevices.CurrentRow.Index].getTestVolume();
-                    if (testMeta.hasValidVolume)
-                    {
-                        WriteTester writeTester = new WriteTester(testMeta);
-                        logAdd(writeTester.test1_CreateFolder());
-                        logAdd(writeTester.test2_CreateFile());
-                        logAdd(writeTester.test3_OverwriteFile());
-                        logAdd(writeTester.test4_SetFileAttributes());
-                        logAdd(writeTester.test5_WriteToFile());
-                        logAdd(writeTester.test55_SetDirCreateTime());
-                        logAdd(writeTester.test6_DeleteFile());
-                        logAdd(writeTester.test7_DeleteFolder());
-                        logAdd(writeTester.test65_HardLink());
-                        logAdd(writeTester.test8_ShellScript());
-                    }
-                    nextState(ApplicationState.SecondChecksum);
-                }
-            }
-            else
-            {
-                okMsgBox("Tests can only be executed with a disk selected in the 'USB Devices' grid.");
-            }
-        }
-
-        private void btnPrepare_Click(object sender, EventArgs e)
-        {
-            if (_dataSource.Count > 0)
-            {
-                DialogResult result =
-                    yncMsgBox("Write locking must be disabled when preparing the volume for testing! Continue?");
-                if (result == DialogResult.Yes)
-                {
-                    logAdd("Preparation process started.");
-                    TestMeta testMeta = _dataSource[grdDevices.CurrentRow.Index].getTestVolume();
-                    VolumePreparer volumePreparer = new VolumePreparer(testMeta);
-                    logAdd(volumePreparer.CreateFile());
-                    logAdd(volumePreparer.CreateFolder());
-                    logAdd("Preparation process finished.");
-                    nextState(ApplicationState.WriteProtectionEnabled);
-                }
-            }
-            else
-            {
-                okMsgBox("Preparation can only be executed with a disk selected in the 'USB Devices' grid.");
-            }
-
-        }
-
-        private void okMsgBox(string text)
-        {
-            MessageBox.Show(text,
-                @"USB Writelock Test Application",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Exclamation);
-        }
-
-        private DialogResult yncMsgBox(string text)
-        {
-            return MessageBox.Show(text, @"USB Writelock Test Application", MessageBoxButtons.YesNo,
-                MessageBoxIcon.Warning);
-        }
-
-        private void btnWriteEnabled_Click(object sender, EventArgs e)
-        {
-            nextState(ApplicationState.FirstChecksum);
-        }
-
-        private void btnSecondHash_Click(object sender, EventArgs e)
-        {
-            btnCheckSum1_Click(sender, e);
-        }
-
-        private void btnCleanup_Click(object sender, EventArgs e)
-        {
-            _deviceCollector.ClearHashes();
-            if (_actDrive != null)
-            {
-                logAdd("Cleaning up preparation files.");
-                _actDrive.testMeta.Clear();
-                _actDrive.testMeta = null;
-            }
-
-            if (grdDevices.CurrentRow != null) updateDetails(grdDevices.CurrentRow.Index);
-            nextState(ApplicationState.PrepareForTests);
-        }
-
-        private void grdDevices_DataError(object sender, DataGridViewDataErrorEventArgs e)
-        {
-            okMsgBox("The device was removed. Application will be set to initial state.");
-            e.ThrowException = false;
-            btnCleanup.PerformClick();
         }
     }
 }
