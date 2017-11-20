@@ -23,6 +23,8 @@ FilterConnection::~FilterConnection()
 {
 }
 
+
+// allows to connect to the filter, delivers error message instead
 HRESULT FilterConnection::ConnectFilter()
 {
 	HRESULT hResult = S_OK;
@@ -63,6 +65,7 @@ HRESULT FilterConnection::LoadDriver()
 	return hResult;
 }
 
+// polls the devices and fills the volumes vector
 void FilterConnection::PollDevices()
 {
 	UCHAR buffer[1024];
@@ -151,10 +154,8 @@ void FilterConnection::PollDevices()
 	std::sort(volumes.begin(), volumes.end());
 }
 
+// Determine if our filter is attached to the volume given
 ULONG FilterConnection::IsAttachedToVolume(_In_ LPCWSTR VolumeName)
-/*++
-Determine if our filter is attached to this volume
---*/
 {
 	CHAR buffer[1024];
 	PINSTANCE_FULL_INFORMATION data = PINSTANCE_FULL_INFORMATION(buffer);
@@ -200,14 +201,11 @@ Determine if our filter is attached to this volume
 		sizeof(buffer) - sizeof(WCHAR),
 		&bytesReturned)));
 
-	//
-	//  Close the handle
-	//
-
 	FilterVolumeInstanceFindClose(volumeIterator);
 	return instanceCount;
 }
 
+// finds out if the given device is an USB device
 BOOL FilterConnection::isUsbDevice(std::wstring volumeAccessPath)
 {
 	HANDLE deviceHandle = CreateFileW(volumeAccessPath.c_str(), 

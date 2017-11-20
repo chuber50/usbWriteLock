@@ -8,7 +8,6 @@ namespace usbWriteLockTest.data
     public class UsbDrive : IEquatable<UsbDrive>
     {
         public List<LogicalVolume> volumes = new List<LogicalVolume>();
-        //public List<Hash> hashes = new List<Hash>();
         public TestMeta testMeta;
 
         public UsbDrive(string driveName, string model, ulong driveSize)
@@ -22,7 +21,6 @@ namespace usbWriteLockTest.data
         {
             if (firstHash == null)
             {
-                //hashes.Add(new Hash(hashes.Count + 1, hashCode));
                 firstHash = hashCode;
                 
             }

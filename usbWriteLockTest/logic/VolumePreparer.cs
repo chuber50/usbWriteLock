@@ -4,6 +4,7 @@ using usbWriteLockTest.data;
 
 namespace usbWriteLockTest.logic
 {
+    // preparation functions
     class VolumePreparer
     {
         private const string CMsgSuccess = "Success";

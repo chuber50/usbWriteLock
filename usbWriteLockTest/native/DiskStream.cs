@@ -7,7 +7,8 @@ using static usbWriteLockTest.native.Prototypes;
 
 namespace usbWriteLockTest.native
 {
-    //https://stackoverflow.com/questions/15185295/why-raw-disk-read-in-c-sharp-reads-from-slightly-shifted-offset
+    // inherits from the stream class
+    // represents a stream using native functions
     public class DiskStream : Stream
     {
         public const int DEFAULT_SECTOR_SIZE = 512;

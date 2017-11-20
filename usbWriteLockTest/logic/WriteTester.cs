@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
-using System.Text;
-using System.Windows.Forms;
 using usbWriteLockTest.data;
 
 namespace usbWriteLockTest.logic
 {
+    // this class contains all tests which are perfomed by the main application
     class WriteTester
     {
         private const string CMsgSuccess = "Success";

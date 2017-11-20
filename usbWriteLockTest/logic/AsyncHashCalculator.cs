@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography;
 using usbWriteLockTest.data;
@@ -25,15 +24,16 @@ namespace usbWriteLockTest.logic
             _backgroundWorker.ProgressChanged += handleProgressChanged;
         }
 
+        // the progres event
         private void handleProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             progressChanged?.Invoke(this, e);
         }
 
+        // computes a hash by reading the disk in chunks of 4kb
+        // reports back its progress to the main process
         public string computeHash()
         {
-            //Debug.Assert(_usbDrive.volumes.TrueForAll(v => v.locked));
-
             long totalBytesRead = 0;
 
             using (DiskStream stream = new DiskStream(_usbDrive.driveName, FileAccess.Read, _usbDrive.bytesPerSector,

@@ -6,6 +6,8 @@ using static usbWriteLockTest.native.Prototypes;
 
 namespace usbWriteLockTest.native
 {
+    // implements native functions used for disk access
+    // like read, lock
     public class WinApiVolume : IDisposable
     {
         private SafeFileHandle _hFile = null;

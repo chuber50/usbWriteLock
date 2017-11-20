@@ -28,17 +28,6 @@ DriverEntry (
     _In_ PUNICODE_STRING RegistryPath
     );
 
-
-//NTSTATUS
-//SpyMessage (
-//    _In_ PVOID ConnectionCookie,
-//    _In_reads_bytes_opt_(InputBufferSize) PVOID InputBuffer,
-//    _In_ ULONG InputBufferSize,
-//    _Out_writes_bytes_to_opt_(OutputBufferSize,*ReturnOutputBufferLength) PVOID OutputBuffer,
-//    _In_ ULONG OutputBufferSize,
-//    _Out_ PULONG ReturnOutputBufferLength
-//    );
-
 NTSTATUS
 WlCommunicationConnect(
     _In_ PFLT_PORT ClientPort,
@@ -52,11 +41,6 @@ VOID
 WlCommunicationDisconnect(
     _In_opt_ PVOID ConnectionCookie
     );
-
-//NTSTATUS
-//SpyEnlistInTransaction (
-//    _In_ PCFLT_RELATED_OBJECTS FltObjects
-//    );
 
 //---------------------------------------------------------------------------
 //  Assign text sections for each routine.
@@ -384,12 +368,8 @@ WlPreOperationCallback (
 
 Routine Description:
 
-    This routine receives ALL pre-operation callbacks for this filter.  It then
-    tries to log information about the given operation.  If we are able
-    to log information then we will call our post-operation callback  routine.
-
-    NOTE:  This routine must be NON-PAGED because it can be called on the
-           paging path.
+    This routine receives ALL pre-operation callbacks for this filter. It then
+	tries to block the write-specific ones and suppresses the post-operation callback.
 
 Arguments:
 
@@ -411,16 +391,19 @@ Return Value:
 
 	if (Data && Data->Iopb)
 	{
+		// we just look at IRP_MJ_CREATE
 		if (Data->Iopb->MajorFunction == IRP_MJ_CREATE)
 		{
-			//http://www.osronline.com/showThread.cfm?link=79773
+			// extract the relevant bitmasks
 			PFLT_IO_PARAMETER_BLOCK IopbPtr = Data->Iopb;
 			PFLT_PARAMETERS ParameterPtr = &IopbPtr->Parameters;
 			PIO_SECURITY_CONTEXT SecurityContextPtr = ParameterPtr->Create.SecurityContext;
 
+			// these are not null if Iopb is not
 			ACCESS_MASK desiredAccess = SecurityContextPtr->DesiredAccess;
 			ACCESS_MASK createDisposition = ParameterPtr->Create.Options;
 
+			// bitmask operation: detect write operation
 			BOOLEAN writeOperation = ((desiredAccess & 
 				(FILE_WRITE_DATA | 
 					FILE_WRITE_ATTRIBUTES | 
@@ -433,6 +416,7 @@ Return Value:
 					FILE_ADD_SUBDIRECTORY)) ||
 				(Data->Iopb->Parameters.Create.Options & FILE_DELETE_ON_CLOSE));
 
+			// bitmask operation: detect overwrite operation
 			BOOLEAN overwriteOperation = (createDisposition & 
 				(FILE_SUPERSEDE | 
 					FILE_CREATE | 
@@ -442,13 +426,21 @@ Return Value:
 					FILE_ADD_SUBDIRECTORY));
 
 			if (writeOperation || overwriteOperation) {
+
+				// strip down remaining access bitmasks for STATUS_SUCCESS test
 				//SecurityContextPtr->AccessState->PreviouslyGrantedAccess = 0;
 				//SecurityContextPtr->AccessState->RemainingDesiredAccess = 0;
+
 				Data->IoStatus.Status = STATUS_ACCESS_DENIED; //STATUS_CANCELLED; // STATUS_ACCESS_DENIED
-				Data->IoStatus.Information = 0;
+			    
+			    // suppress remaining information
+				Data->IoStatus.Information = 0; 
+
 				DbgPrint("IRP Major: %u \n", Data->Iopb->MajorFunction);
 				DbgPrint("IRP Minor: %u \n", Data->Iopb->MinorFunction);
-				return FLT_PREOP_COMPLETE;
+
+				// does not require Post-operation callback
+				return FLT_PREOP_COMPLETE; 
 			}
 		}	
 	}
@@ -471,12 +463,7 @@ WlPostOperationCallback (
 
 Routine Description:
 
-    This routine receives ALL post-operation callbacks.  This will take
-    the log record passed in the context parameter and update it with
-    the completion information.  It will then insert it on a list to be
-    sent to the usermode component.
-
-    NOTE:  This routine must be NON-PAGED because it can be called at DPC level
+    This routine has been stripped down to just pass the data to the next filter.
 
 Arguments:
 
@@ -499,11 +486,6 @@ Return Value:
 {
     UNREFERENCED_PARAMETER( FltObjects );
 
-    //
-    //  If our instance is in the process of being torn down don't bother to
-    //  log this record, free it now.
-    //
-
 	(void)Flags;
 	(void)CompletionContext;
 	(void)Data;
@@ -512,245 +494,6 @@ Return Value:
 
     return FLT_POSTOP_FINISHED_PROCESSING;
 }
-
-//
-//NTSTATUS
-//SpyEnlistInTransaction (
-//    _In_ PCFLT_RELATED_OBJECTS FltObjects
-//    )
-///*++
-//
-//Routine Description
-//
-//    Minispy calls this function to enlist in a transaction of interest. 
-//
-//Arguments
-//
-//    FltObjects - Contains parameters required to enlist in a transaction.
-//
-//Return value
-//
-//    Returns STATUS_SUCCESS if we were able to successfully enlist in a new transcation or if we
-//    were already enlisted in the transaction. Returns an appropriate error code on a failure.
-//    
-//--*/
-//{
-//
-//#if USBWL_VISTA
-//
-//    PMINISPY_TRANSACTION_CONTEXT transactionContext = NULL;
-//    PMINISPY_TRANSACTION_CONTEXT oldTransactionContext = NULL;
-//    PRECORD_LIST recordList;
-//    NTSTATUS status;
-//    static ULONG Sequence=1;
-//
-//    //
-//    //  This code is only built in the Vista environment, but
-//    //  we need to ensure this binary still runs down-level.  Return
-//    //  at this point if the transaction dynamic imports were not found.
-//    //
-//    //  If we find FltGetTransactionContext, we assume the other
-//    //  transaction APIs are also present.
-//    //
-//
-//    if (NULL == UsbWlData.PFltGetTransactionContext) {
-//
-//        return STATUS_SUCCESS;
-//    }
-//
-//    //
-//    //  Try to get our context for this transaction. If we get
-//    //  one we have already enlisted in this transaction.
-//    //
-//
-//    status = (*UsbWlData.PFltGetTransactionContext)( FltObjects->Instance,
-//                                                       FltObjects->Transaction,
-//                                                       &transactionContext );
-//
-//    if (NT_SUCCESS( status )) {
-//
-//        // 
-//        //  Check if we have already enlisted in the transaction. 
-//        //
-//
-//        if (FlagOn(transactionContext->Flags, MINISPY_ENLISTED_IN_TRANSACTION)) {
-//
-//            //
-//            //  FltGetTransactionContext puts a reference on the context. Release
-//            //  that now and return success.
-//            //
-//            
-//            FltReleaseContext( transactionContext );
-//            return STATUS_SUCCESS;
-//        }
-//
-//        //
-//        //  If we have not enlisted then we need to try and enlist in the transaction.
-//        //
-//        
-//        goto ENLIST_IN_TRANSACTION;
-//    }
-//
-//    //
-//    //  If the context does not exist create a new one, else return the error
-//    //  status to the caller.
-//    //
-//
-//    if (status != STATUS_NOT_FOUND) {
-//
-//        return status;
-//    }
-//
-//    //
-//    //  Allocate a transaction context.
-//    //
-//
-//    status = FltAllocateContext( FltObjects->Filter,
-//                                 FLT_TRANSACTION_CONTEXT,
-//                                 sizeof(USBWL_TRANSACTION_CONTEXT),
-//                                 PagedPool,
-//                                 &transactionContext );
-//
-//    if (!NT_SUCCESS( status )) {
-//
-//        return status;
-//    }
-//
-//    //
-//    //  Set the context into the transaction
-//    //
-//
-//    RtlZeroMemory(transactionContext, sizeof(USBWL_TRANSACTION_CONTEXT));
-//    transactionContext->Count = Sequence++;
-//
-//    FLT_ASSERT( UsbWlData.PFltSetTransactionContext );
-//
-//    status = (*UsbWlData.PFltSetTransactionContext)( FltObjects->Instance,
-//                                                       FltObjects->Transaction,
-//                                                       FLT_SET_CONTEXT_KEEP_IF_EXISTS,
-//                                                       transactionContext,
-//                                                       &oldTransactionContext );
-//
-//    if (!NT_SUCCESS( status )) {
-//
-//        FltReleaseContext( transactionContext );    //this will free the context
-//
-//        if (status != STATUS_FLT_CONTEXT_ALREADY_DEFINED) {
-//
-//            return status;
-//        }
-//
-//        FLT_ASSERT(oldTransactionContext != NULL);
-//        
-//        if (FlagOn(oldTransactionContext->Flags, MINISPY_ENLISTED_IN_TRANSACTION)) {
-//
-//            //
-//            //  If this context is already enlisted then release the reference
-//            //  which FltSetTransactionContext put on it and return success.
-//            //
-//            
-//            FltReleaseContext( oldTransactionContext );
-//            return STATUS_SUCCESS;
-//        }
-//
-//        //
-//        //  If we found an existing transaction then we should try and
-//        //  enlist in it. There is a race here in which the thread 
-//        //  which actually set the transaction context may fail to 
-//        //  enlist in the transaction and delete it later. It might so
-//        //  happen that we picked up a reference to that context here
-//        //  and successfully enlisted in that transaction. For now
-//        //  we have chosen to ignore this scenario.
-//        //
-//
-//        //
-//        //  If we are not enlisted then assign the right transactionContext
-//        //  and attempt enlistment.
-//        //
-//
-//        transactionContext = oldTransactionContext;            
-//    }
-//
-//ENLIST_IN_TRANSACTION: 
-//
-//    //
-//    //  Enlist on this transaction for notifications.
-//    //
-//
-//    FLT_ASSERT( UsbWlData.PFltEnlistInTransaction );
-//
-//    status = (*UsbWlData.PFltEnlistInTransaction)( FltObjects->Instance,
-//                                                     FltObjects->Transaction,
-//                                                     transactionContext,
-//                                                     FLT_MAX_TRANSACTION_NOTIFICATIONS );
-//
-//    //
-//    //  If the enlistment failed we might have to delete the context and remove
-//    //  our count.
-//    //
-//
-//    if (!NT_SUCCESS( status )) {
-//
-//        //
-//        //  If the error is that we are already enlisted then we do not need
-//        //  to delete the context. Otherwise we have to delete the context
-//        //  before releasing our reference.
-//        //
-//        
-//        if (status == STATUS_FLT_ALREADY_ENLISTED) {
-//
-//            status = STATUS_SUCCESS;
-//
-//        } else {
-//
-//            //
-//            //  It is worth noting that only the first caller of
-//            //  FltDeleteContext will remove the reference added by
-//            //  filter manager when the context was set.
-//            //
-//            
-//            FltDeleteContext( transactionContext );
-//        }
-//        
-//        FltReleaseContext( transactionContext );
-//        return status;
-//    }
-//
-//    //
-//    //  Set the flag so that future enlistment efforts know that we
-//    //  successfully enlisted in the transaction.
-//    //
-//
-//    SetFlagInterlocked( &transactionContext->Flags, MINISPY_ENLISTED_IN_TRANSACTION );
-//    
-//    //
-//    //  The operation succeeded, remove our count
-//    //
-//
-//    FltReleaseContext( transactionContext );
-//
-//    //
-//    //  Log a record that a new transaction has started.
-//    //
-//
-//    recordList = SpyNewRecord();
-//
-//    if (recordList) {
-//
-//        SpyLogTransactionNotify( FltObjects, recordList, 0 );
-//
-//        //
-//        //  Send the logged information to the user service.
-//        //
-//
-//        SpyLog( recordList );
-//    }
-//
-//#endif // USBWL_VISTA
-//
-//    return STATUS_SUCCESS;
-//}
-
 
 #if USBWL_VISTA
 
@@ -783,51 +526,3 @@ WlDeleteTxfContext (
     FLT_ASSERT(FLT_TRANSACTION_CONTEXT == ContextType);
     FLT_ASSERT(Context->Count != 0);
 }
-
-
-//LONG
-//SpyExceptionFilter (
-//    _In_ PEXCEPTION_POINTERS ExceptionPointer,
-//    _In_ BOOLEAN AccessingUserBuffer
-//    )
-///*++
-//
-//Routine Description:
-//
-//    Exception filter to catch errors touching user buffers.
-//
-//Arguments:
-//
-//    ExceptionPointer - The exception record.
-//
-//    AccessingUserBuffer - If TRUE, overrides FsRtlIsNtStatusExpected to allow
-//                          the caller to munge the error to a desired status.
-//
-//Return Value:
-//
-//    EXCEPTION_EXECUTE_HANDLER - If the exception handler should be run.
-//
-//    EXCEPTION_CONTINUE_SEARCH - If a higher exception handler should take care of
-//                                this exception.
-//
-//--*/
-//{
-//    NTSTATUS Status;
-//
-//    Status = ExceptionPointer->ExceptionRecord->ExceptionCode;
-//
-//    //
-//    //  Certain exceptions shouldn't be dismissed within the namechanger filter
-//    //  unless we're touching user memory.
-//    //
-//
-//    if (!FsRtlIsNtstatusExpected( Status ) &&
-//        !AccessingUserBuffer) {
-//
-//        return EXCEPTION_CONTINUE_SEARCH;
-//    }
-//
-//    return EXCEPTION_EXECUTE_HANDLER;
-//}
-
-

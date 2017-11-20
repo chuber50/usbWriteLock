@@ -88,6 +88,7 @@ namespace usbWriteLockTest
 
         }
 
+        // the backgroundworker process which creates the hash
         private void hashWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             BackgroundWorker worker = sender as BackgroundWorker;
@@ -346,6 +347,7 @@ namespace usbWriteLockTest
             btnCleanup.PerformClick();
         }
 
+        // the "state machine" implementation for the assistant function
         private void nextState(ApplicationState nextState)
         {
             _state = nextState;

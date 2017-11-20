@@ -8,6 +8,8 @@ namespace usbWriteLockTest.logic
         private readonly ManagementEventWatcher _pnpWatcher;
         private readonly Action _triggerAction;
 
+        // registers to the ManagementEventWatcher
+        // gets a trigger action (update the grid) which is triggered on every pnp event that matches our conditions
         public PnpEventWatcher(Action triggerAction)
         {
             _triggerAction = triggerAction; // delegate 
